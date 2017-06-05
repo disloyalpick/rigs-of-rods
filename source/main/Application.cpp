@@ -1,6 +1,6 @@
 /*
     This source file is part of Rigs of Rods
-    Copyright 2013-2016 Petr Ohlidal
+    Copyright 2013-2017 Petr Ohlidal
 
     For more information, see http://www.rigsofrods.org/
 
@@ -17,11 +17,11 @@
     along with Rigs of Rods. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/** 
-    @file   Application.cpp
-    @author Petr Ohlidal
-    @date   05/2014
-*/
+
+/// @file   Application.cpp
+/// @author Petr Ohlidal
+/// @date   05/2014
+
 
 #include "Application.h"
 
@@ -55,6 +55,7 @@ static Console*         g_console;
 static InputEngine*     g_input_engine;
 static CacheSystem*     g_cache_system;
 static MainMenu*        g_main_menu;
+static RoRFrameListener* g_sim_controller;
 
 // App
 static int              g_app_state_active;      ///< Current state
@@ -351,9 +352,11 @@ Console*               GetConsole            () { return g_gui_manager->GetConso
 InputEngine*           GetInputEngine        () { return g_input_engine;}
 CacheSystem*           GetCacheSystem        () { return g_cache_system;}
 MainMenu*              GetMainMenu           () { return g_main_menu;}
+RoRFrameListener*      GetSimController      () { return g_sim_controller; }
 
 // Instance management
-void SetMainMenu(MainMenu* obj) { g_main_menu = obj; }
+void SetMainMenu       (MainMenu* obj)                { g_main_menu = obj; }
+void SetSimController  (RoRFrameListener* obj)        { g_sim_controller = obj;}
 
 void StartOgreSubsystem()
 {
@@ -600,8 +603,8 @@ const char* GfxFlaresModeToString(int v)
 {
     switch ((GfxFlaresMode)v)
     {
-    case GFX_FLARES_NONE                   : return "NONE"                   ;
-    case GFX_FLARES_NO_LIGHTSOURCES        : return "NO_LIGHTSOURCES"        ;
+    case GFX_FLARES_NONE                   : return "NONE";
+    case GFX_FLARES_NO_LIGHTSOURCES        : return "NO_LIGHTSOURCES";
     case GFX_FLARES_CURR_VEHICLE_HEAD_ONLY : return "CURR_VEHICLE_HEAD_ONLY" ;
     case GFX_FLARES_ALL_VEHICLES_HEAD_ONLY : return "ALL_VEHICLES_HEAD_ONLY" ;
     case GFX_FLARES_ALL_VEHICLES_ALL_LIGHTS: return "ALL_VEHICLES_ALL_LIGHTS";
@@ -650,8 +653,8 @@ const char* IoInputGrabModeToStr(int v)
 {
     switch ((IoInputGrabMode)v)
     {
-    case INPUT_GRAB_NONE   : return "NONE"   ;
-    case INPUT_GRAB_ALL    : return "ALL"    ;
+    case INPUT_GRAB_NONE   : return "NONE";
+    case INPUT_GRAB_ALL    : return "ALL";
     case INPUT_GRAB_DYNAMIC: return "DYNAMIC";
     default                : return "~invalid~";
     }

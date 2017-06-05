@@ -1,6 +1,6 @@
 /*
 	This source file is part of Rigs of Rods
-	Copyright 2013-2016 Petr Ohlidal
+	Copyright 2013-2017 Petr Ohlidal
 
 	For more information, see http://www.rigsofrods.org/
 
@@ -17,12 +17,11 @@
 	along with Rigs of Rods. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/** 
-	@file   Application.h
-	@author Petr Ohlidal
-	@date   05/2014
-	@brief  Central state/object manager and communications hub.
-*/
+
+/// @file   Application.h
+/// @author Petr Ohlidal
+/// @date   05/2014
+/// @brief  Central state/object manager and communications hub.
 
 #pragma once
 
@@ -145,6 +144,7 @@ Console*             GetConsole();
 InputEngine*         GetInputEngine();
 CacheSystem*         GetCacheSystem();
 MainMenu*            GetMainMenu();
+RoRFrameListener*    GetSimController();
 
 State                GetActiveAppState       ();
 State                GetPendingAppState      ();
@@ -308,7 +308,8 @@ void SetDiagPreselectedVehicle  (std::string const & v);
 void SetDiagPreselectedVehConfig(std::string const & v);
 void SetDiagPreselectedVehEnter (bool                v);
 
-void SetMainMenu  (MainMenu* obj);
+void SetMainMenu             (MainMenu*          obj);
+void SetSimController        (RoRFrameListener*  obj);
 
 // Factories
 void StartOgreSubsystem();
