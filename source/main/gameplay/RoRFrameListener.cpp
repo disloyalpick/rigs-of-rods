@@ -117,9 +117,7 @@ using namespace RoR;
 #define  simSELECT(_S_) (_S_ == App::SIM_STATE_SELECTING  )
 #define  simEDITOR(_S_) (_S_ == App::SIM_STATE_EDITOR_MODE)
 
-RoRFrameListener::RoRFrameListener(RoR::ForceFeedback* ff, RoR::SkidmarkConfig* skid_conf) :
-    m_beam_factory(this),
-    m_character_factory(this),
+RoRFrameListener::RoRFrameListener(RoR::ForceFeedback* ff) :
     m_dir_arrow_pointed(Vector3::ZERO),
     m_heathaze(nullptr),
     m_force_feedback(ff),
@@ -290,7 +288,7 @@ bool RoRFrameListener::UpdateInputEvents(float dt)
         gui_man->SetVisible_TeleportWindow(! gui_man->IsVisible_TeleportWindow());
     }
 
-    if (gui_man->IsVisible_GamePauseMenu())
+    if (App::GetActiveSimState() == App::SimState::SIM_STATE_PAUSED)
         return true; //Stop everything when pause menu is visible
 
     if (gui_man->IsVisible_FrictionSettings() && curr_truck)
@@ -791,7 +789,7 @@ bool RoRFrameListener::UpdateInputEvents(float dt)
             {
                 if (gEnv->player)
                 {
-                    if (!App::GetGuiManager()->IsVisible_GamePauseMenu())
+                    if (App::GetActiveSimState() != App::SimState::SIM_STATE_PAUSED)
                         gEnv->player->setPhysicsEnabled(true);
                 }
             }
@@ -1729,7 +1727,7 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
         m_time_until_next_toggle -= dt;
     }
 
-    RoR::App::GetGuiManager()->FrameStepGui(dt);
+    RoR::App::GetGuiManager()->DrawSimulationGui(dt);
 
     App::GetGuiManager()->GetTeleport()->TeleportWindowFrameStep(
         gEnv->player->getPosition().x, gEnv->player->getPosition().z, is_altkey_pressed);
@@ -1769,9 +1767,9 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
                     RoR::App::GetOverlayWrapper()->UpdatePressureTexture(curr_truck->getPressure());
                 }
 
-                if (m_race_in_progress && !RoR::App::GetGuiManager()->IsVisible_GamePauseMenu())
+                if (m_race_in_progress && (App::GetActiveSimState() != App::SimState::SIM_STATE_PAUSED))
                 {
-                    UpdateRacingGui(); //I really think that this should stay here.
+                    this->UpdateRacingGui();
                 }
 
                 if (curr_truck->driveable == TRUCK && curr_truck->engine != nullptr)
@@ -1795,7 +1793,6 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
 
         if (simRUNNING(s) && (App::GetPendingSimState() == App::SIM_STATE_PAUSED))
         {
-            App::GetGuiManager()->SetVisible_GamePauseMenu(true);
             m_beam_factory.MuteAllTrucks();
             gEnv->player->setPhysicsEnabled(false);
 
@@ -1804,7 +1801,6 @@ bool RoRFrameListener::frameStarted(const FrameEvent& evt)
         }
         else if (simPAUSED(s) && (App::GetPendingSimState() == App::SIM_STATE_RUNNING))
         {
-            App::GetGuiManager()->SetVisible_GamePauseMenu(false);
             m_beam_factory.UnmuteAllTrucks();
             if (gEnv->player->getVisible() && !gEnv->player->getBeamCoupling())
             {
