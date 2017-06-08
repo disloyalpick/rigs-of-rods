@@ -866,8 +866,6 @@ void Beam::calc_masses2(Real total, bool reCalc)
 {
     BES_GFX_START(BES_GFX_calc_masses2);
 
-    bool debugMass = App::GetDiagTruckMass();
-
     //reset
     for (int i = 0; i < free_node; i++)
     {
@@ -916,24 +914,25 @@ void Beam::calc_masses2(Real total, bool reCalc)
     {
         it->beam->p2->mass = 100.0f;
     }
+
     //fix camera mass
     for (int i = 0; i < freecinecamera; i++)
+    {
         nodes[cinecameranodepos[i]].mass = 20.0f;
-
-    //hooks must be heavy
-    //for (std::vector<hook_t>::iterator it=hooks.begin(); it!=hooks.end(); it++)
-    //	if (!it->hookNode->overrideMass)
-    //		it->hookNode->mass = 500.0f;
+    }
 
     //update mass
     for (int i = 0; i < free_node; i++)
     {
-        //LOG("Nodemass "+TOSTRING(i)+"-"+TOSTRING(nodes[i].mass));
         //for stability
         if (!nodes[i].iswheel && nodes[i].mass < minimass)
         {
-            if (debugMass)
-            LOG("Node " + TOSTRING(i) +" mass ("+TOSTRING(nodes[i].mass)+"kg) too light. Resetting to minimass ("+ TOSTRING(minimass) +"kg).");
+            if (App::GetDiagTruckMass())
+            {
+                char buf[300];
+                snprintf(buf, 300, "Node '%d' mass (%f Kg) is too light. Resetting to 'minimass' (%f Kg)", i, nodes[i].mass, minimass);
+                LOG(buf);
+            }
             nodes[i].mass = minimass;
         }
     }
@@ -941,15 +940,15 @@ void Beam::calc_masses2(Real total, bool reCalc)
     totalmass = 0;
     for (int i = 0; i < free_node; i++)
     {
-        if (debugMass)
+        if (App::GetDiagTruckMass())
         {
-            String msg = "Node " + TOSTRING(i) + " : " + TOSTRING((int)nodes[i].mass) + " kg";
+            String msg = "Node " + TOSTRING(i) + " : " + TOSTRING((int)nodes[i].mass) + " Kg";
             if (nodes[i].loadedMass)
             {
                 if (nodes[i].overrideMass)
                     msg += " (overriden by node mass)";
                 else
-                    msg += " (normal load node: " + TOSTRING(loadmass) + " kg / " + TOSTRING(masscount) + " nodes)";
+                    msg += " (normal load node: " + TOSTRING(loadmass) + " Kg / " + TOSTRING(masscount) + " nodes)";
             }
             LOG(msg);
         }

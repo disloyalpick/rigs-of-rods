@@ -235,9 +235,9 @@ void RigSpawner::InitializeRig()
     m_rig->smokeId=0;
     m_rig->smokeRef=0;
     m_rig->editorId=-1;
-    m_rig->beambreakdebug  = SETTINGS.getBooleanSetting("Beam Break Debug", false);
-    m_rig->beamdeformdebug = SETTINGS.getBooleanSetting("Beam Deform Debug", false);
-    m_rig->triggerdebug    = SETTINGS.getBooleanSetting("Trigger Debug", false);
+    m_rig->beambreakdebug  = App::GetDiagLogBeamBreak();
+    m_rig->beamdeformdebug = App::GetDiagLogBeamDeform();
+    m_rig->triggerdebug    = App::GetDiagLogBeamTrigger();
     m_rig->rotaInertia = nullptr;
     m_rig->hydroInertia = nullptr;
     m_rig->cmdInertia = nullptr;

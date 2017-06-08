@@ -644,6 +644,12 @@ static const char* CONF_COLLISION_DBG   = "Debug Collisions";
 static const char* CONF_TRUCKMASS_DBG   = "Debug TruckMass";
 static const char* CONF_ENVMAP_DEBUG    = "EnvMapDebug";
 static const char* CONF_VIDEOCAM_DEBUG  = "VideoCameraDebug";
+static const char* CONF_DIAG_MASS_CALC  = "Debug Truck Mass";
+static const char* CONF_CONSOLE_ECHO    = "Enable Ingame Console";
+static const char* CONF_DIAG_BREAK_LOG  = "Beam Break Debug";     
+static const char* CONF_DIAG_DEFORM_LOG = "Beam Deform Debug";    
+static const char* CONF_DIAG_TRIG_LOG   = "Trigger Debug";        
+static const char* CONF_DIAG_DOF_EFFECT = "DOFDebug";             
 static const char* CONF_PRESELECTED_TERRAIN     = "Preselected Map";
 static const char* CONF_PRESELECTED_TRUCK       = "Preselected Truck";
 static const char* CONF_PRESELECTED_TRUCK_CFG   = "Preselected TruckConfig";
@@ -725,6 +731,12 @@ bool Settings::ParseGlobalVarSetting(std::string const & k, std::string const & 
     if (k == CONF_TRUCKMASS_DBG   ) { App::SetDiagTruckMass        (B(v)); return true; }
     if (k == CONF_ENVMAP_DEBUG    ) { App::SetDiagEnvmap           (B(v)); return true; }
     if (k == CONF_VIDEOCAM_DEBUG  ) { App::SetDiagVideoCameras     (B(v)); return true; }
+    if (k == CONF_DIAG_MASS_CALC  ) { App::SetDiagTruckMass        (B(v)); return true; }
+    if (k == CONF_CONSOLE_ECHO    ) { App::SetDiagLogConsoleEcho   (B(v)); return true; }
+    if (k == CONF_DIAG_BREAK_LOG  ) { App::SetDiagLogBeamBreak     (B(v)); return true; }
+    if (k == CONF_DIAG_DEFORM_LOG ) { App::SetDiagLogBeamDeform    (B(v)); return true; }
+    if (k == CONF_DIAG_TRIG_LOG   ) { App::SetDiagLogBeamTrigger   (B(v)); return true; }
+    if (k == CONF_DIAG_DOF_EFFECT ) { App::SetDiagDofEffect        (B(v)); return true; }
     if (k == CONF_PRESELECTED_TERRAIN     ) { App::SetDiagPreselectedTerrain   (S(v)); return true; }
     if (k == CONF_PRESELECTED_TRUCK       ) { App::SetDiagPreselectedVehicle   (S(v)); return true; }
     if (k == CONF_PRESELECTED_TRUCK_CFG   ) { App::SetDiagPreselectedVehConfig (S(v)); return true; }
@@ -795,9 +807,9 @@ inline const char* IoInputGrabToStr(App::IoInputGrabMode v)
     switch (v)
     {
     case App::INPUT_GRAB_DYNAMIC: return CONF_INPUT_GRAB_DYNAMIC;
-    case App::INPUT_GRAB_NONE   : return CONF_INPUT_GRAB_NONE   ;
-    case App::INPUT_GRAB_ALL    : return CONF_INPUT_GRAB_ALL    ;
-    default                     : return ""                     ;
+    case App::INPUT_GRAB_NONE   : return CONF_INPUT_GRAB_NONE;
+    case App::INPUT_GRAB_ALL    : return CONF_INPUT_GRAB_ALL;
+    default                     : return "";
     }
 }
 
@@ -805,10 +817,10 @@ inline const char* GfxShadowTechToStr(App::GfxShadowType v)
 {
     switch (v)
     {
-    case App::GFX_SHADOW_TYPE_TEXTURE: return CONF_GFX_SHADOW_TEX  ;
-    case App::GFX_SHADOW_TYPE_PSSM   : return CONF_GFX_SHADOW_PSSM ;
-    case App::GFX_SHADOW_TYPE_NONE   : return CONF_GFX_SHADOW_NONE ;
-    default                          : return ""                   ;
+    case App::GFX_SHADOW_TYPE_TEXTURE: return CONF_GFX_SHADOW_TEX;
+    case App::GFX_SHADOW_TYPE_PSSM   : return CONF_GFX_SHADOW_PSSM;
+    case App::GFX_SHADOW_TYPE_NONE   : return CONF_GFX_SHADOW_NONE;
+    default                          : return "";
     }
 }
 
@@ -817,9 +829,9 @@ inline const char* GfxExtcamModeToStr(App::GfxExtCamMode v)
     switch (v)
     {
     case App::GFX_EXTCAM_MODE_PITCHING: return CONF_EXTCAM_PITCHING;
-    case App::GFX_EXTCAM_MODE_STATIC  : return CONF_EXTCAM_STATIC  ;
-    case App::GFX_EXTCAM_MODE_NONE    : return CONF_EXTCAM_NONE    ;
-    default                           : return ""                  ;
+    case App::GFX_EXTCAM_MODE_STATIC  : return CONF_EXTCAM_STATIC;
+    case App::GFX_EXTCAM_MODE_NONE    : return CONF_EXTCAM_NONE;
+    default                           : return "";
     }
 }
 
@@ -827,11 +839,11 @@ inline const char* GfxTexFilterToStr(App::GfxTexFilter v)
 {
     switch (v)
     {
-    case App::GFX_TEXFILTER_NONE       : return CONF_TEXFILTER_NONE ;
-    case App::GFX_TEXFILTER_BILINEAR   : return CONF_TEXFILTER_BILI ;
+    case App::GFX_TEXFILTER_NONE       : return CONF_TEXFILTER_NONE;
+    case App::GFX_TEXFILTER_BILINEAR   : return CONF_TEXFILTER_BILI;
     case App::GFX_TEXFILTER_TRILINEAR  : return CONF_TEXFILTER_TRILI;
     case App::GFX_TEXFILTER_ANISOTROPIC: return CONF_TEXFILTER_ANISO;
-    default                            : return ""                  ;
+    default                            : return "";
     }
 }
 
@@ -839,11 +851,11 @@ inline const char* GfxVegetationToStr(App::GfxVegetation v)
 {
     switch (v)
     {
-    case App::GFX_VEGETATION_NONE  : return CONF_VEGET_NONE  ;
+    case App::GFX_VEGETATION_NONE  : return CONF_VEGET_NONE;
     case App::GFX_VEGETATION_20PERC: return CONF_VEGET_20PERC;
     case App::GFX_VEGETATION_50PERC: return CONF_VEGET_50PERC;
-    case App::GFX_VEGETATION_FULL  : return CONF_VEGET_FULL  ;
-    default                        : return ""               ;
+    case App::GFX_VEGETATION_FULL  : return CONF_VEGET_FULL;
+    default                        : return "";
     }
 }
 
@@ -851,12 +863,12 @@ inline const char* SimGearboxToStr(App::SimGearboxMode v)
 {
     switch (v)
     {
-    case App::SIM_GEARBOX_AUTO         : return CONF_GEARBOX_AUTO      ;
-    case App::SIM_GEARBOX_SEMI_AUTO    : return CONF_GEARBOX_SEMIAUTO  ;
-    case App::SIM_GEARBOX_MANUAL       : return CONF_GEARBOX_MANUAL    ;
-    case App::SIM_GEARBOX_MANUAL_STICK : return CONF_GEARBOX_MAN_STICK ;
+    case App::SIM_GEARBOX_AUTO         : return CONF_GEARBOX_AUTO;
+    case App::SIM_GEARBOX_SEMI_AUTO    : return CONF_GEARBOX_SEMIAUTO;
+    case App::SIM_GEARBOX_MANUAL       : return CONF_GEARBOX_MANUAL;
+    case App::SIM_GEARBOX_MANUAL_STICK : return CONF_GEARBOX_MAN_STICK;
     case App::SIM_GEARBOX_MANUAL_RANGES: return CONF_GEARBOX_MAN_RANGES;
-    default                            : return ""                     ;
+    default                            : return "";
     }
 }
 
@@ -864,12 +876,12 @@ inline const char* GfxFlaresToStr(App::GfxFlaresMode v)
 {
     switch(v)
     {
-    case App::GFX_FLARES_NONE                   : return CONF_FLARES_NONE      ;
-    case App::GFX_FLARES_NO_LIGHTSOURCES        : return CONF_FLARES_NO_LIGHT  ;
-    case App::GFX_FLARES_CURR_VEHICLE_HEAD_ONLY : return CONF_FLARES_CURR_HEAD ;
-    case App::GFX_FLARES_ALL_VEHICLES_HEAD_ONLY : return CONF_FLARES_ALL_HEADS ;
+    case App::GFX_FLARES_NONE                   : return CONF_FLARES_NONE;
+    case App::GFX_FLARES_NO_LIGHTSOURCES        : return CONF_FLARES_NO_LIGHT;
+    case App::GFX_FLARES_CURR_VEHICLE_HEAD_ONLY : return CONF_FLARES_CURR_HEAD;
+    case App::GFX_FLARES_ALL_VEHICLES_HEAD_ONLY : return CONF_FLARES_ALL_HEADS;
     case App::GFX_FLARES_ALL_VEHICLES_ALL_LIGHTS: return CONF_FLARES_ALL_LIGHTS;
-    default                                     : return ""                    ;
+    default                                     : return "";
     }
 }
 
@@ -877,12 +889,12 @@ inline const char* GfxWaterToStr(App::GfxWaterMode v)
 {
     switch(v)
     {
-    case App::GFX_WATER_BASIC    : return CONF_WATER_BASIC    ;
-    case App::GFX_WATER_REFLECT  : return CONF_WATER_REFLECT  ;
+    case App::GFX_WATER_BASIC    : return CONF_WATER_BASIC;
+    case App::GFX_WATER_REFLECT  : return CONF_WATER_REFLECT;
     case App::GFX_WATER_FULL_FAST: return CONF_WATER_FULL_FAST;
-    case App::GFX_WATER_FULL_HQ  : return CONF_WATER_FULL_HQ  ;
-    case App::GFX_WATER_HYDRAX   : return CONF_WATER_HYDRAX   ;
-    default                      : return ""                  ;
+    case App::GFX_WATER_FULL_HQ  : return CONF_WATER_FULL_HQ;
+    case App::GFX_WATER_HYDRAX   : return CONF_WATER_HYDRAX;
+    default                      : return "";
     }
 }
 
@@ -890,10 +902,10 @@ inline const char* GfxSkyToStr(App::GfxSkyMode v)
 {
     switch(v)
     {
-    case App::GFX_SKY_CAELUM   : return CONF_SKY_CAELUM   ;
-    case App::GFX_SKY_SKYX     : return CONF_SKY_SKYX     ;
+    case App::GFX_SKY_CAELUM   : return CONF_SKY_CAELUM;
+    case App::GFX_SKY_SKYX     : return CONF_SKY_SKYX;
     case App::GFX_SKY_SANDSTORM: return CONF_SKY_SANDSTORM;
-    default                    : return ""                ;
+    default                    : return "";
     }
 }
 
@@ -989,6 +1001,11 @@ void Settings::SaveSettings()
     f << CONF_COLLISION_DBG   << "=" << B(App::GetDiagCollisions      ()) << endl;
     f << CONF_TRUCKMASS_DBG   << "=" << B(App::GetDiagTruckMass       ()) << endl;
     f << CONF_ENVMAP_DEBUG    << "=" << B(App::GetDiagEnvmap          ()) << endl;
+    f << CONF_CONSOLE_ECHO    << "=" << B(App::GetDiagLogConsoleEcho  ()) << endl;
+    f << CONF_DIAG_BREAK_LOG  << "=" << B(App::GetDiagLogBeamBreak    ()) << endl;
+    f << CONF_DIAG_DEFORM_LOG << "=" << B(App::GetDiagLogBeamDeform   ()) << endl;
+    f << CONF_DIAG_TRIG_LOG   << "=" << B(App::GetDiagLogBeamTrigger  ()) << endl;
+    f << CONF_DIAG_DOF_EFFECT << "=" << B(App::GetDiagDofEffect       ()) << endl;
     f << CONF_PRESELECTED_TERRAIN     << "=" << _(App::GetDiagPreselectedTerrain  ()) << endl;
     f << CONF_PRESELECTED_TRUCK       << "=" << _(App::GetDiagPreselectedVehicle  ()) << endl;
     f << CONF_PRESELECTED_TRUCK_CFG   << "=" << _(App::GetDiagPreselectedVehConfig()) << endl;

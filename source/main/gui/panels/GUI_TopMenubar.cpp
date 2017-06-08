@@ -241,16 +241,74 @@ void RoR::GUI::TopMenubar::Update()
                 m_open_menu = TopMenu::TOPMENU_NONE;
             }
 
-            if (ImGui::Button("Debug Options"))
+            ImGui::Separator();
+            ImGui::TextColored(GRAY_HINT_TEXT, "Pre-spawn diag. options:");
+
+            bool diag_mass = App::GetDiagTruckMass();
+            if (ImGui::Checkbox("Node mass recalc. logging", &diag_mass))
             {
-                m_open_menu = TopMenu::TOPMENU_NONE;
-                App::GetGuiManager()->SetVisible_DebugOptions(true);
+                App::SetDiagTruckMass(diag_mass);
+            }
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::Text("Extra logging on runtime - mass recalculation (config: \"Debug Truck Mass\"; GVar: \"diag_truck_mass\")");
+                ImGui::EndTooltip();
+            }
+
+            bool diag_break = App::GetDiagLogBeamBreak();
+            if (ImGui::Checkbox("Beam break logging", &diag_break))
+            {
+                App::SetDiagLogBeamBreak(diag_break);
+            }
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::Text("Extra logging on runtime (config: \"Beam Break Debug\"; GVar: \"diag_log_beam_break\")");
+                ImGui::EndTooltip();
+            }
+
+            bool diag_deform = App::GetDiagLogBeamDeform();
+            if (ImGui::Checkbox("Beam deform. logging", &diag_deform))
+            {
+                App::SetDiagLogBeamDeform(diag_deform);
+            }
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::Text("Extra logging on runtime (config: \"Beam Deform Debug\"; GVar: \"diag_log_beam_deform\")");
+                ImGui::EndTooltip();
+            }
+
+            bool diag_trig = App::GetDiagLogBeamTrigger();
+            if (ImGui::Checkbox("Trigger logging", &diag_trig))
+            {
+                App::SetDiagLogBeamTrigger(diag_trig);
+            }
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::Text("Extra logging on runtime - trigger beams activity (config: \"Trigger Debug\"; GVar: \"diag_log_beam_trigger\")");
+                ImGui::EndTooltip();
+            }
+
+            bool diag_vcam = App::GetDiagVideoCameras();
+            if (ImGui::Checkbox("VideoCamera direction marker", &diag_vcam))
+            {
+                App::SetDiagVideoCameras(diag_vcam);
+            }
+            if (ImGui::IsItemHovered())
+            {
+                ImGui::BeginTooltip();
+                ImGui::Text("Visual marker of VideoCameras direction (config: \"VideoCameraDebug\"; GVar: \"diag_videocameras\")");
+                ImGui::EndTooltip();
             }
 
             // TODO: Make the radio buttons visible only when there's active actor
             // NOTE: Currently there seems to be a bug in IMGUI - if the window is displayed first without the radiobuttons, 
             //       it remembers the size and the radiobuttons never become visible - they get clipped out.
             ImGui::Separator();
+            ImGui::TextColored(GRAY_HINT_TEXT, "Live diagnostic views:");
 
             int debug_view_type = -1;
             if (current_actor != nullptr)
@@ -361,7 +419,7 @@ void RoR::GUI::TopMenubar::DrawActorListSinglePlayer()
     size_t num_actors = App::GetSimController()->GetNumActors();
     if (num_actors == 0)
     {
-        ImGui::PushStyleColor(ImGuiCol_Text, ACTORLIST_GRAY_TEXT);
+        ImGui::PushStyleColor(ImGuiCol_Text, GRAY_HINT_TEXT);
         ImGui::Text("None spawned yet");
         ImGui::Text("Use [Simulation] menu");
         ImGui::PopStyleColor();

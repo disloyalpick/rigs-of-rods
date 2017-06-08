@@ -35,6 +35,26 @@
 #include "OverlayWrapper.h"
 #include "SceneMouse.h"
 
+/* -------------------- Research of debug options (only_a_ptr, 06/2017) ----------------------
+
+    ROR.CONF NAME            | GVar name ('+': added) --- Description
+
+["Debug Truck Mass"]         | GVar: diag_truck_mass  --- extra logging on runtime - mass recalculation.
+["Debug Collisions"]         | GVar: diag_collisions  --- visual debug of static map collisions. Only effective on map load.
+["EnvMapDebug"]              | GVar: diag_envmap      --- effective on terrain load (envmap init). 
+["VideoCameraDebug"]         | GVar: diag_videocameras--- creates debug mesh showing videocamera direction. Effective on vehicle spawn.
+
+["Enable Ingame Console"]    |       +                --- Equivalent to "\log" console command, echoes all RoR.log output to console. Reported to cause massive slowdown on startup.
+["Beam Break Debug"]         |       +                --- Use before spawn, lasts entire vehicle lifetime.
+["Beam Deform Debug"]        |       +                --- Use before spawn, lasts entire vehicle lifetime.
+["Trigger Debug"]            |       +                --- Use before spawn, lasts entire vehicle lifetime.
+["DOFDebug"]                 |       +                --- Effective on CameraManager init (map loading)
+
+["Advanced Logging"]         | ~ no gvar ~            --- DEAD, used in removed 'ScopeLog' feature of old spawner. 
+["NoCrashRpt"]               | ~ no gvar ~            --- DEAD, also doesn't make sense.
+
+*/
+
 #define STR_CREF  std::string const &
 
 namespace RoR {
@@ -98,6 +118,11 @@ static std::string      g_diag_preselected_terrain;    ///< Config: STR  Presele
 static std::string      g_diag_preselected_vehicle;    ///< Config: STR  Preselected Truck  
 static std::string      g_diag_preselected_veh_config; ///< Config: STR  Preselected TruckConfig
 static bool             g_diag_preselected_veh_enter;  ///< Config: STR  Enter Preselected Truck
+static bool             g_diag_log_console_echo;       ///< Config: BOOL Enable Ingame Console
+static bool             g_diag_log_beam_break;         ///< Config: BOOL Beam Break Debug     
+static bool             g_diag_log_beam_deform;        ///< Config: BOOL Beam Deform Debug    
+static bool             g_diag_log_beam_trigger;       ///< Config: BOOL Trigger Debug        
+static bool             g_diag_dof_effect;             ///< Config: BOOL DOFDebug             
 
 // System
 static std::string      g_sys_process_dir;       ///< No ending slash.
@@ -221,11 +246,16 @@ int             GetGfxEnvmapRate           () { return g_gfx_envmap_rate;       
 int             GetGfxSkidmarksMode        () { return g_gfx_skidmarks_mode;       }
 bool            GetGfxMinimapDisabled      () { return g_gfx_minimap_disabled;     }
 bool            GetDiagRigLogNodeImport    () { return g_diag_rig_log_node_import; }
-bool            GetDiagRigLogNodeStats     () { return g_diag_rig_log_node_stats ; }
-bool            GetDiagRigLogMessages      () { return g_diag_rig_log_messages   ; }
-bool            GetDiagCollisions          () { return g_diag_collisions         ; }
-bool            GetDiagTruckMass           () { return g_diag_truck_mass         ; }
-bool            GetDiagEnvmap              () { return g_diag_envmap             ; }
+bool            GetDiagRigLogNodeStats     () { return g_diag_rig_log_node_stats;  }
+bool            GetDiagRigLogMessages      () { return g_diag_rig_log_messages;    }
+bool            GetDiagCollisions          () { return g_diag_collisions;          }
+bool            GetDiagTruckMass           () { return g_diag_truck_mass;          }
+bool            GetDiagEnvmap              () { return g_diag_envmap;              }
+bool            GetDiagLogConsoleEcho      () { return g_diag_log_console_echo;    }
+bool            GetDiagLogBeamBreak        () { return g_diag_log_beam_break;      }
+bool            GetDiagLogBeamDeform       () { return g_diag_log_beam_deform;     }
+bool            GetDiagLogBeamTrigger      () { return g_diag_log_beam_trigger;    }
+bool            GetDiagDofEffect           () { return g_diag_dof_effect;          }
 STR_CREF        GetAppLanguage             () { return g_app_language;             }
 STR_CREF        GetAppLocale               () { return g_app_locale;               }
 bool            GetAppMultithread          () { return g_app_multithread;          }
@@ -306,7 +336,12 @@ void SetDiagRigLogNodeStats  (bool            v) { SetVarBool    (g_diag_rig_log
 void SetDiagRigLogMessages   (bool            v) { SetVarBool    (g_diag_rig_log_messages     , "diag_rig_log_messages"     , v); }
 void SetDiagCollisions       (bool            v) { SetVarBool    (g_diag_collisions      , "diag_collisions"           , v); }
 void SetDiagTruckMass        (bool            v) { SetVarBool    (g_diag_truck_mass      , "diag_truck_mass"           , v); }
-void SetDiagEnvmap           (bool            v) { SetVarBool    (g_diag_envmap          , "diag_envmap"               , v); }
+void SetDiagEnvmap           (bool            v) { SetVarBool    (g_diag_envmap          , "diag_envmap"               , v); }       
+void SetDiagLogConsoleEcho   (bool            v) { SetVarBool    (g_diag_log_console_echo, "diag_log_console_echo"     , v); }
+void SetDiagLogBeamBreak     (bool            v) { SetVarBool    (g_diag_log_beam_break  , "diag_log_beam_break"       , v); }
+void SetDiagLogBeamDeform    (bool            v) { SetVarBool    (g_diag_log_beam_deform , "diag_log_beam_deform"      , v); }
+void SetDiagLogBeamTrigger   (bool            v) { SetVarBool    (g_diag_log_beam_trigger, "diag_log_beam_trigger"     , v); }
+void SetDiagDofEffect        (bool            v) { SetVarBool    (g_diag_dof_effect      , "diag_dof_effect"           , v); }
 void SetAppLanguage          (STR_CREF        v) { SetVarStr     (g_app_language         , "app_language"              , v); }
 void SetAppLocale            (STR_CREF        v) { SetVarStr     (g_app_locale           , "app_locale"                , v); }
 void SetAppMultithread       (bool            v) { SetVarBool    (g_app_multithread      , "app_multithread"           , v); }

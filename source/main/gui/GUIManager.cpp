@@ -36,7 +36,6 @@
 #include "TerrainManager.h"
 
 //Managed GUI panels
-#include "GUI_DebugOptions.h"
 #include "GUI_FrictionSettings.h"
 #include "GUI_GameMainMenu.h"
 #include "GUI_GameAbout.h"
@@ -74,7 +73,6 @@ struct GuiManagerImpl
     GUI::GameAbout              panel_GameAbout;
     GUI::GameSettings           panel_GameSettings;
     GUI::GamePauseMenu          panel_GamePauseMenu;
-    GUI::DebugOptions           panel_DebugOptions;
     GUI::SimUtils               panel_SimUtils;
     GUI::gMessageBox            panel_MessageBox;
     GUI::MultiplayerSelector    panel_MultiplayerSelector;
@@ -97,7 +95,6 @@ struct GuiManagerImpl
 void GUIManager::SetVisible_GameMainMenu        (bool v) { m_impl->panel_GameMainMenu       .SetVisible(v); }
 void GUIManager::SetVisible_GameAbout           (bool v) { m_impl->panel_GameAbout          .SetVisible(v); }
 void GUIManager::SetVisible_GameSettings        (bool v) { m_impl->panel_GameSettings       .SetVisible(v); }
-void GUIManager::SetVisible_DebugOptions        (bool v) { m_impl->panel_DebugOptions       .SetVisible(v); }
 void GUIManager::SetVisible_MultiplayerSelector (bool v) { m_impl->panel_MultiplayerSelector.SetVisible(v); }
 void GUIManager::SetVisible_ChatBox             (bool v) { m_impl->panel_ChatBox            .SetVisible(v); }
 void GUIManager::SetVisible_SpawnerReport       (bool v) { m_impl->panel_SpawnerReport      .SetVisible(v); }
@@ -112,7 +109,6 @@ void GUIManager::SetVisible_Console             (bool v) { m_impl->panel_GameCon
 bool GUIManager::IsVisible_GameMainMenu         () { return m_impl->panel_GameMainMenu       .IsVisible(); }
 bool GUIManager::IsVisible_GameAbout            () { return m_impl->panel_GameAbout          .IsVisible(); }
 bool GUIManager::IsVisible_GameSettings         () { return m_impl->panel_GameSettings       .IsVisible(); }
-bool GUIManager::IsVisible_DebugOptions         () { return m_impl->panel_DebugOptions       .IsVisible(); }
 bool GUIManager::IsVisible_MessageBox           () { return m_impl->panel_MessageBox         .IsVisible(); }
 bool GUIManager::IsVisible_MultiplayerSelector  () { return m_impl->panel_MultiplayerSelector.IsVisible(); }
 bool GUIManager::IsVisible_MainSelector         () { return m_impl->panel_MainSelector       .IsVisible(); }
@@ -372,7 +368,6 @@ void GUIManager::ReflectGameState()
         m_impl->panel_GameMainMenu       .SetVisible(!m_impl->panel_MainSelector.IsVisible());
 
         m_impl->panel_ChatBox            .SetVisible(false);
-        m_impl->panel_DebugOptions       .SetVisible(false);
         m_impl->panel_FrictionSettings   .SetVisible(false);
         m_impl->panel_TextureToolWindow  .SetVisible(false);
         m_impl->panel_TeleportWindow     .SetVisible(false);

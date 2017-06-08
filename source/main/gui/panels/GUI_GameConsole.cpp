@@ -170,7 +170,7 @@ void Console::messageLogged(const String& message, LogMessageLevel lml, bool mas
     }
     else
     {
-        if (BSETTING("Enable Ingame Console", false))
+        if (App::GetDiagLogConsoleEcho())
         {
             if (lml == LML_NORMAL)
                 putMessage(CONSOLE_MSGTYPE_LOG, CONSOLE_LOGMESSAGE, UTFString("#FFFFFF") + (msg), "script_error.png");
@@ -404,17 +404,10 @@ void Console::eventCommandAccept(MyGUI::Edit* _sender)
         else if (args[0] == "/log")
         {
             // switch to console logging
-            bool logging = BSETTING("Enable Ingame Console", false);
-            if (!logging)
-            {
-                putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, _L(" logging to console enabled"), "information.png");
-                SETTINGS.setSetting("Enable Ingame Console", "Yes");
-            }
-            else
-            {
-                putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, _L(" logging to console disabled"), "information.png");
-                SETTINGS.setSetting("Enable Ingame Console", "No");
-            }
+            bool now_logging = !App::GetDiagLogConsoleEcho();
+            const char* msg = (now_logging) ? " logging to console enabled" : " logging to console disabled";
+            this->putMessage(CONSOLE_MSGTYPE_INFO, CONSOLE_SYSTEM_NOTICE, _L(msg), "information.png");
+            App::SetDiagLogConsoleEcho(now_logging);
             return;
         }
         else
