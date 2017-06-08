@@ -107,10 +107,11 @@ void MainMenu::EnterMainMenuLoop()
         minTimePerFrame = 1000 / fpsLimit;
     }
 
+    App::GetGuiManager()->GetImGui().StartRendering(gEnv->sceneManager);
+
     while (App::GetPendingAppState() == App::APP_STATE_NONE)
     {
         startTime = App::GetOgreSubsystem()->GetTimer()->getMilliseconds();
-
 
         MainMenuLoopUpdate(timeSinceLastFrame);
 
@@ -134,6 +135,9 @@ void MainMenu::EnterMainMenuLoop()
             App::SetPendingAppState(App::APP_STATE_SHUTDOWN);
             continue;
         }
+
+        App::GetGuiManager()->NewImGuiFrame(timeSinceLastFrame);
+        App::GetGuiManager()->DrawMainMenuGui();
 
         RoR::App::GetOgreSubsystem()->GetOgreRoot()->renderOneFrame();
 
@@ -163,7 +167,7 @@ void MainMenu::EnterMainMenuLoop()
 
         timeSinceLastFrame = RoR::App::GetOgreSubsystem()->GetTimer()->getMilliseconds() - startTime;
     }
-
+    App::GetGuiManager()->GetImGui().StopRendering();
     RoRWindowEventUtilities::removeWindowEventListener(App::GetOgreSubsystem()->GetRenderWindow(), this);
 }
 
