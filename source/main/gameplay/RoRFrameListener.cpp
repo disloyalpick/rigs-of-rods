@@ -117,7 +117,9 @@ using namespace RoR;
 #define  simSELECT(_S_) (_S_ == App::SIM_STATE_SELECTING  )
 #define  simEDITOR(_S_) (_S_ == App::SIM_STATE_EDITOR_MODE)
 
-RoRFrameListener::RoRFrameListener(RoR::ForceFeedback* ff) :
+RoRFrameListener::RoRFrameListener(RoR::ForceFeedback* ff, RoR::SkidmarkConfig* skid_conf) :
+    m_beam_factory(this),
+    m_character_factory(this),
     m_dir_arrow_pointed(Vector3::ZERO),
     m_heathaze(nullptr),
     m_force_feedback(ff),

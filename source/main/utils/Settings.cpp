@@ -748,13 +748,13 @@ bool Settings::ParseGlobalVarSetting(std::string const & k, std::string const & 
 
 void Settings::LoadSettings(std::string filepath)
 {
-    ConfigFile cfg;
+    Ogre::ConfigFile cfg;
     try
     {
         cfg.load(filepath, "=:\t", false);
 
         // load all settings into a map!
-        ConfigFile::SettingsIterator i = cfg.getSettingsIterator();
+        Ogre::ConfigFile::SettingsIterator i = cfg.getSettingsIterator();
         String s_value, s_name;
         while (i.hasMoreElements())
         {
@@ -773,7 +773,7 @@ void Settings::LoadSettings(std::string filepath)
             settings[s_name] = s_value;
         }
     }
-    catch (Ogre::FileNotFoundException e) {} // Just continue with defaults...
+    catch (Ogre::FileNotFoundException&) {} // Just continue with defaults...
 
     // generate hash of the token
     String usertoken = SSETTING("User Token", "");
