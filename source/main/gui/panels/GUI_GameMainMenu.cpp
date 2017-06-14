@@ -65,13 +65,13 @@ void RoR::GUI::GameMainMenu::Draw()
         if (ImGui::Button(sp_title, btn_size) || this->CheckKbEnter(0))
         {
             this->SetVisible(false);
-            if (App::GetDiagPreselectedTerrain().empty())
+            if (App::diag_preset_terrain.IsActiveEmpty())
             {
                 App::GetGuiManager()->GetMainSelector()->Show(LT_Terrain);
             }
             else
             {
-                App::SetPendingAppState(App::APP_STATE_SIMULATION);
+                App::app_state.SetPending(AppState::SIMULATION);
             }
         }
             
@@ -87,7 +87,7 @@ void RoR::GUI::GameMainMenu::Draw()
         const char* settings_title = (m_kb_focus_index == 2) ? "--> Settings <--" : "Settings";
         if (ImGui::Button(settings_title, btn_size) || this->CheckKbEnter(2))
         {
-            App::GetGuiManager()->SetVisible_GameSettings(true);
+            // App::GetGuiManager()->SetVisible_GameSettings(true); // TODO: Remake the settings panel
             this->SetVisible(false);
         }
 
@@ -101,7 +101,7 @@ void RoR::GUI::GameMainMenu::Draw()
         const char* exit_title = (m_kb_focus_index == 4) ? "--> Exit game <--" : "Exit game";
         if (ImGui::Button(exit_title, btn_size) || this->CheckKbEnter(4))
         {
-            App::SetPendingAppState(App::APP_STATE_SHUTDOWN);
+            App::app_state.SetPending(AppState::SHUTDOWN);
             this->SetVisible(false);
         }
     }

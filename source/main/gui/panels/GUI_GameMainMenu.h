@@ -43,8 +43,8 @@ public:
     GameMainMenu();
 
     // Keyboard updates - move up/down and wrap on top/bottom. Initial index is '-1' which means "no focus"
-    inline void   KeyUpPressed()                   { m_kb_focus_index = (m_kb_focus_index <= 0) ? (NUM_BUTTONS-1) : (m_kb_focus_index - 1); }
-    inline void   KeyDownPressed()                 { m_kb_focus_index = (m_kb_focus_index < (NUM_BUTTONS - 1)) ? (m_kb_focus_index + 1) : 0; }
+    inline void   KeyUpPressed()                   { m_kb_focus_index = (m_kb_focus_index <= 0) ? static_cast<int>(NUM_BUTTONS-1) : (m_kb_focus_index - 1); }
+    inline void   KeyDownPressed()                 { m_kb_focus_index = (m_kb_focus_index < static_cast<int>(NUM_BUTTONS - 1)) ? (m_kb_focus_index + 1) : 0; }
     inline bool   IsVisible() const                { return m_is_visible; }
     inline void   SetVisible(bool v)               { m_is_visible = v; }
     inline bool   CheckKbEnter(int idx)            { return (idx == m_kb_focus_index) && (ImGui::GetIO().KeysDown[ImGuiKey_Enter]); }

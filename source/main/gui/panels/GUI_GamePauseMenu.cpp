@@ -63,25 +63,25 @@ void RoR::GUI::GamePauseMenu::Draw() // TODO: Copypaste of 'GameMainMenu' -- cle
         const char* resume_title = (m_kb_focus_index == 0) ? "--> Resume game <--" : "Resume game"; // TODO: Localize all!
         if (ImGui::Button(resume_title, btn_size) || this->CheckKbEnter(0))
         {
-            App::SetPendingSimState(App::SIM_STATE_RUNNING);
+            App::sim_state.SetPending(SimState::RUNNING);
         }
             
         const char* chmap_title = (m_kb_focus_index == 1) ? "--> Change map <--" : "Change map";
         if (ImGui::Button(chmap_title , btn_size) || this->CheckKbEnter(1))
         {
-            App::SetPendingAppState(RoR::App::APP_STATE_CHANGE_MAP);
+            App::app_state.SetPending(RoR::AppState::CHANGE_MAP);
         }
 
         const char* settings_title = (m_kb_focus_index == 2) ? "--> Return to menu <--" : "Return to menu";
         if (ImGui::Button(settings_title, btn_size) || this->CheckKbEnter(2))
         {
-            App::SetPendingAppState(App::APP_STATE_MAIN_MENU);
+            App::app_state.SetPending(AppState::MAIN_MENU);
         }
 
         const char* exit_title = (m_kb_focus_index == 3) ? "--> Exit game <--" : "Exit game";
         if (ImGui::Button(exit_title, btn_size) || this->CheckKbEnter(3))
         {
-            App::SetPendingAppState(RoR::App::APP_STATE_SHUTDOWN);
+            App::app_state.SetPending(RoR::AppState::SHUTDOWN);
         }
     }
 

@@ -113,7 +113,7 @@ void RoR::GUI::TopMenubar::Update()
 
             if (ImGui::Button("Get new vehicle"))
             {
-                App::SetActiveSimState(App::SIM_STATE_SELECTING); // TODO: use 'pending' mechanism
+                App::sim_state.SetActive(SimState::SELECTING); // TODO: use 'pending' mechanism
                 App::GetGuiManager()->GetMainSelector()->Show(LT_AllBeam);
                 m_open_menu = TopMenu::TOPMENU_NONE;
             }
@@ -146,7 +146,7 @@ void RoR::GUI::TopMenubar::Update()
                 App::GetSimController()->GetBeamFactory()->removeCurrentTruck();
             }
 
-            if (App::GetActiveMpState() != App::MP_STATE_CONNECTED) // Singleplayer only!
+            if (App::mp_state.GetActive() != MpState::CONNECTED) // Singleplayer only!
             {
                 if (ImGui::Button("Activate all vehicles"))
                 {
@@ -173,12 +173,12 @@ void RoR::GUI::TopMenubar::Update()
 
             if (ImGui::Button("Back to menu"))
             {
-                App::SetPendingAppState(App::APP_STATE_MAIN_MENU);
+                App::app_state.SetPending(AppState::MAIN_MENU);
             }
 
             if (ImGui::Button("Exit"))
             {
-                App::SetPendingAppState(App::APP_STATE_SHUTDOWN);
+                App::app_state.SetPending(AppState::SHUTDOWN);
             }
 
             m_open_menu_hoverbox_min = menu_pos;
@@ -194,7 +194,7 @@ void RoR::GUI::TopMenubar::Update()
         ImGui::SetNextWindowPos(menu_pos);
         if (ImGui::Begin("Actors menu", nullptr, static_cast<ImGuiWindowFlags_>(flags)))
         {
-            if (App::GetActiveMpState() != App::MP_STATE_CONNECTED)
+            if (App::mp_state.GetActive() != MpState::CONNECTED)
             {
                 this->DrawActorListSinglePlayer();
             }
@@ -244,10 +244,10 @@ void RoR::GUI::TopMenubar::Update()
             ImGui::Separator();
             ImGui::TextColored(GRAY_HINT_TEXT, "Pre-spawn diag. options:");
 
-            bool diag_mass = App::GetDiagTruckMass();
+            bool diag_mass = App::diag_truck_mass.GetActive();
             if (ImGui::Checkbox("Node mass recalc. logging", &diag_mass))
             {
-                App::SetDiagTruckMass(diag_mass);
+                App::diag_truck_mass.SetActive(diag_mass);
             }
             if (ImGui::IsItemHovered())
             {
@@ -256,10 +256,10 @@ void RoR::GUI::TopMenubar::Update()
                 ImGui::EndTooltip();
             }
 
-            bool diag_break = App::GetDiagLogBeamBreak();
+            bool diag_break = App::diag_log_beam_break.GetActive();
             if (ImGui::Checkbox("Beam break logging", &diag_break))
             {
-                App::SetDiagLogBeamBreak(diag_break);
+                App::diag_log_beam_break.SetActive(diag_break);
             }
             if (ImGui::IsItemHovered())
             {
@@ -268,10 +268,10 @@ void RoR::GUI::TopMenubar::Update()
                 ImGui::EndTooltip();
             }
 
-            bool diag_deform = App::GetDiagLogBeamDeform();
+            bool diag_deform = App::diag_log_beam_deform.GetActive();
             if (ImGui::Checkbox("Beam deform. logging", &diag_deform))
             {
-                App::SetDiagLogBeamDeform(diag_deform);
+                App::diag_log_beam_deform.SetActive(diag_deform);
             }
             if (ImGui::IsItemHovered())
             {
@@ -280,10 +280,10 @@ void RoR::GUI::TopMenubar::Update()
                 ImGui::EndTooltip();
             }
 
-            bool diag_trig = App::GetDiagLogBeamTrigger();
+            bool diag_trig = App::diag_log_beam_trigger.GetActive();
             if (ImGui::Checkbox("Trigger logging", &diag_trig))
             {
-                App::SetDiagLogBeamTrigger(diag_trig);
+                App::diag_log_beam_trigger.SetActive(diag_trig);
             }
             if (ImGui::IsItemHovered())
             {
@@ -292,10 +292,10 @@ void RoR::GUI::TopMenubar::Update()
                 ImGui::EndTooltip();
             }
 
-            bool diag_vcam = App::GetDiagVideoCameras();
+            bool diag_vcam = App::diag_videocameras.GetActive();
             if (ImGui::Checkbox("VideoCamera direction marker", &diag_vcam))
             {
-                App::SetDiagVideoCameras(diag_vcam);
+                App::diag_videocameras.SetActive(diag_vcam);
             }
             if (ImGui::IsItemHovered())
             {
