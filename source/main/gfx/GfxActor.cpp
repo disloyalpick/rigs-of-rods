@@ -22,9 +22,11 @@
 #include "GfxActor.h"
 
 #include "Beam.h"
+#include "beam_t.h"
 #include "GlobalEnvironment.h" // TODO: Eliminate!
 #include "SkyManager.h"
 #include "imgui.h"
+#include "Utils.h"
 
 #include <OgreResourceGroupManager.h>
 #include <OgreTechnique.h>
@@ -332,52 +334,11 @@ void RoR::GfxActor::UpdateVideoCameras(float dt_sec)
     }
 }
 
-void DrawSkeletonView() ///  ################################################################## reference code ##################################################################
-{
-    // Var
-    ImVec2 screen_size = ImGui::GetIO().DisplaySize;
-
-    // Dummy fullscreen window to draw to
-    int window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar| ImGuiWindowFlags_NoInputs 
-                     | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus;
-    ImGui::Begin("RoR-SoftBodyView", NULL, screen_size, 0, window_flags);
-    ImDrawList* drawlist = ImGui::GetWindowDrawList();
-    ImGui::End();
-    
-    // ** COLOR = ABGR **
-    float pad1 = 100.f;
-
-    // Some test lines
-    ImVec2 mouse_pos = ImGui::GetIO().MousePos;
-
-    ImVec2 hpos_tl = ImVec2( ( (mouse_pos.x + pad1)/2.f),               ((mouse_pos.y + pad1)/2.f));            
-    ImVec2 hpos_tr = ImVec2( ( (mouse_pos.x + screen_size.x-pad1)/2.f), ((mouse_pos.y + pad1)/2.f));              
-    ImVec2 hpos_br = ImVec2( ( (mouse_pos.x + screen_size.x-pad1)/2.f), ((mouse_pos.y + screen_size.y-pad1)/2.f)); 
-    ImVec2 hpos_bl = ImVec2( ( (mouse_pos.x + pad1)/2.f),               ((mouse_pos.y + screen_size.y-pad1)/2.f)); 
-
-    //drawlist->AddLine(mouse_pos, mouse_pos, color, float_thickness
-    drawlist->AddLine(ImVec2(pad1,               pad1),               hpos_tl,  0xFFcc5588, 1.f);
-    drawlist->AddLine(ImVec2(screen_size.x-pad1, pad1),               hpos_tr,  0xFFcc5599, 2.f);
-    drawlist->AddLine(ImVec2(screen_size.x-pad1, screen_size.y-pad1), hpos_br,  0xFF2299dd, 3.f);
-    drawlist->AddLine(ImVec2(pad1,               screen_size.y-pad1), hpos_bl,  0xFFcc55bb, 4.f);
-
-    // Some test circles
-
-    drawlist->AddCircleFilled(ImVec2(pad1,               pad1),               5.f, 0xFFcc5588); 
-    drawlist->AddCircle      (ImVec2(pad1,               pad1),               8.f, 0xFFddbb33, 16, 2.f);
-    drawlist->AddCircleFilled(ImVec2(screen_size.x-pad1, pad1),               10.f, 0xFFcc5599);
-    drawlist->AddCircleFilled(ImVec2(screen_size.x-pad1, screen_size.y-pad1), 15.f, 0xFFcc55aa);
-    drawlist->AddCircleFilled(ImVec2(pad1,               screen_size.y-pad1), 20.f, 0xFFcc55bb);
-
-
-
-    // Triangle
-    // ... left side
-    drawlist->AddTriangle(hpos_tl, hpos_bl, mouse_pos, 0xFF22cc77);
-    // .. right side
-    drawlist->AddTriangleFilled(hpos_tr, hpos_br, mouse_pos, 0xFF55cc77);
-    drawlist->AddTriangle      (hpos_tr, hpos_br, mouse_pos, 0xFF2299dd, 3.f);
-} // ################################################################## end of reference code ##################################################################
+const ImU32 BEAM_COLOR     (0xcc33aabb); // ABGR
+const float BEAM_THICKNESS (1.2f);
+const ImU32 NODE_COLOR     (0xeeaa5523); // ABGR
+const float NODE_RADIUS    (2.f);
+const ImU32 NODE_TEXT_COLOR(0xffcccccf); // ABGR
 
 void RoR::GfxActor::UpdateDebugView()
 {
@@ -386,9 +347,75 @@ void RoR::GfxActor::UpdateDebugView()
         return; // Nothing to do
     }
 
-    // Skeleton display
-    if (m_debug_view == DebugViewType::DEBUGVIEW_SKELETON)
+    // Var
+    ImVec2 screen_size = ImGui::GetIO().DisplaySize;
+    World2ScreenConverter world2screen(
+        gEnv->mainCamera->getViewMatrix(true), gEnv->mainCamera->getProjectionMatrix(), Ogre::Vector2(screen_size.x, screen_size.y));
+
+    // Dummy fullscreen window to draw to
+    int window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar| ImGuiWindowFlags_NoInputs 
+                     | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus;
+    ImGui::Begin("RoR-SoftBodyView", NULL, screen_size, 0, window_flags);
+    ImDrawList* drawlist = ImGui::GetWindowDrawList();
+    ImGui::End();
+
+    // Skeleton display. NOTE: Order matters, it determines Z-ordering on render
+    if ((m_debug_view == DebugViewType::DEBUGVIEW_SKELETON) ||
+        (m_debug_view == DebugViewType::DEBUGVIEW_NODES))
     {
-        
+        // Beams
+        beam_t* beams = m_actor->beams;
+        size_t num_beams = static_cast<size_t>(m_actor->free_beam);
+        for (size_t i = 0; i < num_beams; ++i)
+        {
+            ImVec2 pos1 = world2screen.Convert(beams[i].p1->AbsPosition);
+            ImVec2 pos2 = world2screen.Convert(beams[i].p2->AbsPosition);
+
+            // Original coloring logic:
+            // // float stress_ratio = beams[i].stress / beams[i].minmaxposnegstress;
+            // // float color_scale = std::abs(stress_ratio);
+            // // color_scale = std::min(color_scale, 1.0f);
+            // // 
+            // // if (stress_ratio <= 0)
+            // //     color = ColourValue(0.2f, 1.0f - color_scale, color_scale, 0.8f);
+            // // else
+            // //     color = ColourValue(color_scale, 1.0f - color_scale, 0.2f, 0.8f);            
+
+            drawlist->AddLine(pos1, pos2, BEAM_COLOR, BEAM_THICKNESS);
+        }
+
+        // Nodes
+        node_t* nodes = m_actor->nodes;
+        size_t num_nodes = static_cast<size_t>(m_actor->free_node);
+        for (size_t i = 0; i < num_nodes; ++i)
+        {
+            ImVec2 pos = world2screen.Convert(nodes[i].AbsPosition);
+
+            drawlist->AddCircleFilled(pos, NODE_RADIUS, NODE_COLOR);
+        }
+
+        // Node numbers; drawn after nodes to have higher Z-order
+        if (m_debug_view == DebugViewType::DEBUGVIEW_NODES)
+        {
+            for (size_t i = 0; i < num_nodes; ++i)
+            {
+                ImVec2 pos = world2screen.Convert(nodes[i].AbsPosition);
+
+                GStr<25> id_buf;
+                id_buf << nodes[i].id;
+                drawlist->AddText(pos, NODE_TEXT_COLOR, id_buf.ToCStr());
+            }
+        }
+    }
+}
+
+void RoR::GfxActor::CycleDebugViews()
+{
+    switch (m_debug_view)
+    {
+    case DebugViewType::DEBUGVIEW_NONE:     m_debug_view = DebugViewType::DEBUGVIEW_SKELETON; break;
+    case DebugViewType::DEBUGVIEW_SKELETON: m_debug_view = DebugViewType::DEBUGVIEW_NODES;    break;
+    case DebugViewType::DEBUGVIEW_NODES:    m_debug_view = DebugViewType::DEBUGVIEW_NONE;     break;
+    default:;
     }
 }

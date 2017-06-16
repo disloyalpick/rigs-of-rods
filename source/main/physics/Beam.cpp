@@ -135,21 +135,6 @@ Beam::~Beam()
         delete fuseAirfoil;
     fuseAirfoil = 0;
 
-    if (cabMesh != nullptr)
-    {
-        this->fadeMesh(cabNode, 1.f); // Reset transparency of "skeleton view"
-
-        cabNode->detachAllObjects();
-        cabNode->getParentSceneNode()->removeAndDestroyChild(cabNode->getName());
-        cabNode = nullptr;
-
-        cabEntity->_getManager()->destroyEntity(cabEntity);
-        cabEntity = nullptr;
-
-        delete cabMesh; // Unloads the ManualMesh resource; do this last
-        cabMesh = nullptr;
-    }
-
     if (replay)
         delete replay;
     replay = 0;
@@ -457,43 +442,6 @@ void Beam::scaleTruck(float value)
     BES_GFX_STOP(BES_GFX_ScaleTruck);
 }
 
-void Beam::updateSimpleSkeleton()
-{
-    BES_GFX_START(BES_GFX_UpdateSkeleton);
-
-    ColourValue color;
-
-    if (!simpleSkeletonInitiated)
-        initSimpleSkeleton();
-
-    simpleSkeletonManualObject->beginUpdate(0);
-    for (int i = 0; i < free_beam; i++)
-    {
-        float stress_ratio = beams[i].stress / beams[i].minmaxposnegstress;
-        float color_scale = std::abs(stress_ratio);
-        color_scale = std::min(color_scale, 1.0f);
-
-        if (stress_ratio <= 0)
-            color = ColourValue(0.2f, 1.0f - color_scale, color_scale, 0.8f);
-        else
-            color = ColourValue(color_scale, 1.0f - color_scale, 0.2f, 0.8f);
-
-        simpleSkeletonManualObject->position(beams[i].p1->AbsPosition);
-        simpleSkeletonManualObject->colour(color);
-
-        // remove broken beams
-        if (beams[i].broken || beams[i].disabled)
-            simpleSkeletonManualObject->position(beams[i].p1->AbsPosition);
-        else
-            simpleSkeletonManualObject->position(beams[i].p2->AbsPosition);
-
-        simpleSkeletonManualObject->colour(color);
-    }
-    simpleSkeletonManualObject->end();
-
-    BES_GFX_STOP(BES_GFX_UpdateSkeleton);
-}
-
 void Beam::moveOrigin(Vector3 offset)
 {
     origin += offset;
@@ -541,22 +489,6 @@ Vector3 Beam::getDirection()
 Vector3 Beam::getPosition()
 {
     return position; //the position is already in absolute position
-}
-
-void Beam::CreateSimpleSkeletonMaterial()
-{
-    if (MaterialManager::getSingleton().resourceExists("vehicle-skeletonview-material"))
-    {
-        return;
-    }
-
-    MaterialPtr mat = (MaterialPtr)(MaterialManager::getSingleton().create("vehicle-skeletonview-material", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME));
-
-    mat->getTechnique(0)->getPass(0)->createTextureUnitState();
-    mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureFiltering(TFO_ANISOTROPIC);
-    mat->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureAnisotropy(3);
-    mat->setLightingEnabled(false);
-    mat->setReceiveShadows(false);
 }
 
 void Beam::pushNetwork(char* data, int size)
@@ -2943,10 +2875,6 @@ void Beam::prepareInside(bool inside)
 
 void Beam::lightsToggle()
 {
-    // no lights toggling in skeleton mode because of possible bug with emissive texture
-    if (m_skeletonview_is_active)
-        return;
-
     Beam** trucks = m_sim_controller->GetBeamFactory()->getTrucks();
     int trucksnum = m_sim_controller->GetBeamFactory()->getTruckCount();
 
@@ -3678,6 +3606,8 @@ void Beam::updateVisual(float dt)
         }
     }
 
+    m_gfx_actor->UpdateDebugView();
+
     BES_GFX_STOP(BES_GFX_updateVisual);
 }
 
@@ -3785,47 +3715,6 @@ void Beam::setMeshVisibility(bool visible)
     }
 
     meshesVisible = visible;
-}
-
-void Beam::cabFade(float amount)
-{
-    static float savedCabAlphaRejection = 0;
-
-    // truck cab
-    if (cabNode)
-    {
-        if (amount == 0)
-        {
-            cabNode->setVisible(false);
-        }
-        else
-        {
-            if (amount == 1)
-                cabNode->setVisible(true);
-            if (savedCabAlphaRejection == 0)
-                savedCabAlphaRejection = getAlphaRejection(cabNode);
-            if (amount == 1)
-                setAlphaRejection(cabNode, savedCabAlphaRejection);
-            else if (amount < 1)
-                setAlphaRejection(cabNode, 0);
-            fadeMesh(cabNode, amount);
-        }
-    }
-
-    // wings
-    for (int i = 0; i < free_wing; i++)
-    {
-        if (amount == 0)
-        {
-            wings[i].cnode->setVisible(false);
-        }
-        else
-        {
-            if (amount == 1)
-                wings[i].cnode->setVisible(true);
-            fadeMesh(wings[i].cnode, amount);
-        }
-    }
 }
 
 void Beam::addInterTruckBeam(beam_t* beam, Beam* a, Beam* b)
@@ -3943,7 +3832,7 @@ void Beam::tieToggle(int group)
             {
                 removeInterTruckBeam(it->beam);
                 // update skeletonview on the untied truck
-                it->locked_truck->m_request_skeletonview_change = -1;
+                it->locked_truck->GetGfxActor()->SetDebugView(GfxActor::DebugViewType::DEBUGVIEW_NONE);
             }
             it->locked_truck = nullptr;
         }
@@ -4013,7 +3902,7 @@ void Beam::tieToggle(int group)
                     {
                         addInterTruckBeam(it->beam, this, shtruck);
                         // update skeletonview on the tied truck
-                        shtruck->m_request_skeletonview_change = m_skeletonview_is_active ? 1 : -1;
+                        shtruck->GetGfxActor()->SetDebugView(m_gfx_actor->GetDebugView());
                     }
                 }
             }
@@ -4257,11 +4146,11 @@ void Beam::hookToggle(int group, hook_states mode, int node_number)
         {
             if (it->lockTruck)
             {
-                it->lockTruck->m_request_skeletonview_change = m_skeletonview_is_active ? 1 : -1;
+                it->lockTruck->GetGfxActor()->SetDebugView(m_gfx_actor->GetDebugView());
             }
             else if (lastLockTruck != this)
             {
-                lastLockTruck->m_request_skeletonview_change = -1;
+                lastLockTruck->GetGfxActor()->SetDebugView(m_gfx_actor->GetDebugView());
             }
         }
     }
@@ -5287,9 +5176,6 @@ Beam::Beam(
     , blinkingtype(BLINK_NONE)
     , blinktreshpassed(false)
     , brake(0.0)
-    , cabFadeMode(0)
-    , cabFadeTime(0.3)
-    , cabFadeTimer(0)
     , cameranodeacc(Ogre::Vector3::ZERO)
     , cameranodecount(0)
     , canwork(true)
@@ -5330,9 +5216,7 @@ Beam::Beam(
     , m_hide_own_net_label(BSETTING("HideOwnNetLabel", false))
     , m_is_cinecam_rotation_center(false)
     , m_preloaded_with_terrain(preloaded_with_terrain)
-    , m_request_skeletonview_change(0)
     , m_reset_request(REQUEST_RESET_NONE)
-    , m_skeletonview_is_active(false)
     , m_source_id(0)
     , m_spawn_rotation(0.0)
     , m_stream_id(0)
@@ -5363,8 +5247,6 @@ Beam::Beam(
     , reverselight(false)
     , rightMirrorAngle(-0.52)
     , rudder(0)
-    , simpleSkeletonInitiated(false)
-    , simpleSkeletonManualObject(0)
     , simulated(false)
     , sleeptime(0.0f)
     , smokeNode(NULL)
@@ -5486,8 +5368,6 @@ Beam::Beam(
     }
     // pressurize tires
     addPressure(0.0);
-
-    CreateSimpleSkeletonMaterial();
 
     state = SLEEPING;
 

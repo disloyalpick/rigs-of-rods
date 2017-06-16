@@ -112,15 +112,18 @@ public:
 
     ~GfxActor();
 
-    void                 AddMaterialFlare    (int flare_index, Ogre::MaterialPtr mat);
-    void                 SetMaterialFlareOn  (int flare_index, bool state_on);
-    void                 RegisterCabMaterial (Ogre::MaterialPtr mat, Ogre::MaterialPtr mat_trans);
-    void                 SetCabLightsActive  (bool state_on);
-    Ogre::MaterialPtr&   GetCabTransMaterial () { return m_cab_mat_visual_trans; }
-    void                 SetVideoCamState    (VideoCamState state);
-    inline VideoCamState GetVideoCamState    () const { return m_vidcam_state; }
-    void                 UpdateVideoCameras  (float dt_sec);
-    void                 UpdateDebugView     ();
+    void                      AddMaterialFlare   (int flare_index, Ogre::MaterialPtr mat);
+    void                      SetMaterialFlareOn (int flare_index, bool state_on);
+    void                      RegisterCabMaterial(Ogre::MaterialPtr mat, Ogre::MaterialPtr mat_trans);
+    void                      SetCabLightsActive (bool state_on);
+    void                      SetVideoCamState   (VideoCamState state);
+    void                      UpdateVideoCameras (float dt_sec);
+    void                      UpdateDebugView    ();
+    void                      CycleDebugViews    ();
+    inline void               SetDebugView       (DebugViewType dv)       { m_debug_view = dv; }
+    inline Ogre::MaterialPtr& GetCabTransMaterial()                       { return m_cab_mat_visual_trans; }
+    inline VideoCamState      GetVideoCamState   () const                 { return m_vidcam_state; }
+    inline DebugViewType      GetDebugView       () const                 { return m_debug_view; }
 
 private:
 
