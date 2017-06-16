@@ -313,7 +313,7 @@ void RoR::GUI::TopMenubar::Update()
             int debug_view_type = -1;
             if (current_actor != nullptr)
             {
-                current_actor->debugVisuals;
+                debug_view_type = current_actor->debugVisuals;
             }
             ImGui::RadioButton("no visual debug"       , &debug_view_type,  0);
             ImGui::RadioButton("show node numbers"     , &debug_view_type,  1);
