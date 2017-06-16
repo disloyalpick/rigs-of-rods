@@ -2457,7 +2457,7 @@ void RoRFrameListener::EnterGameplayLoop()
 
     /* LOOP */
 
-    while (App::app_state.GetPending() == App::app_state.GetActive())
+    while (App::app_state.GetPending() == AppState::SIMULATION)
     {
         startTime = RoR::App::GetOgreSubsystem()->GetTimer()->getMilliseconds();
 

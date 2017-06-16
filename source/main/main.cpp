@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
         {
             if (App::app_state.GetPending() == AppState::MAIN_MENU)
             {
-                App::app_state.SetActive(AppState::MAIN_MENU);
+                App::app_state.ApplyPending();
 
                 if (prev_app_state == AppState::SIMULATION)
                 {

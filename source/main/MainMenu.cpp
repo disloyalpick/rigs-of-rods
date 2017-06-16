@@ -109,11 +109,11 @@ void MainMenu::EnterMainMenuLoop()
 
     App::GetGuiManager()->GetImGui().StartRendering(gEnv->sceneManager);
 
-    while (App::app_state.GetPending() == AppState::NONE)
+    while (App::app_state.GetPending() == AppState::MAIN_MENU)
     {
         startTime = App::GetOgreSubsystem()->GetTimer()->getMilliseconds();
 
-        MainMenuLoopUpdate(timeSinceLastFrame);
+        this->MainMenuLoopUpdate(timeSinceLastFrame);
 
         if (RoR::App::GetGuiManager()->GetMainSelector()->IsFinishedSelecting())
         {
