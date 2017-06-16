@@ -144,7 +144,7 @@ GUIManager::GUIManager() :
         RoR::App::GetOgreSubsystem()->GetRenderWindow(), 
         gEnv->sceneManager,
         Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME,
-        gui_logpath.buffer); // use cache resource group so preview images are working
+        gui_logpath.GetBuffer()); // use cache resource group so preview images are working
     auto mygui = new MyGUI::Gui();
 
     // empty init

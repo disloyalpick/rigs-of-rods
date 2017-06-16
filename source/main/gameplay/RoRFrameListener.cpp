@@ -2366,13 +2366,10 @@ bool RoRFrameListener::SetupGameplayLoop()
 
     if (!App::diag_preset_vehicle.IsActiveEmpty())
     {
-        GStr<200> msg;
-        msg << "[RoR|Diag] Preselected Truck: " << App::diag_preset_vehicle.GetActive();
-        LOG(msg.buffer);
+        RoR::LogFormat("[RoR|Diag] Preselected Truck: %s", App::diag_preset_vehicle.GetActive());
         if (!App::diag_preset_veh_config.IsActiveEmpty())
         {
-            msg.Clear() << "[RoR|Diag] Preselected Truck Config: " << App::diag_preset_veh_config.GetActive();
-            LOG(msg.buffer);
+            RoR::LogFormat("[RoR|Diag] Preselected Truck Config: %s", App::diag_preset_veh_config.GetActive());
         }
 
         const std::vector<Ogre::String> truckConfig = std::vector<Ogre::String>(1, App::diag_preset_veh_config.GetActive());

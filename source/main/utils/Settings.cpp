@@ -218,7 +218,7 @@ int DetectBasePaths()
     } 
 #endif
     GStr<500> process_dir;
-    GetParentDirectory(process_dir.buffer, buf);
+    GetParentDirectory(process_dir.GetBuffer(), buf);
     App::sys_process_dir.SetActive(process_dir);
 
     // User directory (local override - portable installation)
@@ -1051,7 +1051,7 @@ bool Settings::SetupAllPaths()
         return true;
     }
 
-    System::GetParentDirectory(buf.buffer, App::sys_process_dir.GetActive());
+    System::GetParentDirectory(buf.GetBuffer(), App::sys_process_dir.GetActive());
     if (FolderExists(buf))
     {
         App::sys_resources_dir.SetActive(buf);

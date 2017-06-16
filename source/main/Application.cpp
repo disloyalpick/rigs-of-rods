@@ -41,7 +41,7 @@
 
 ["Debug Truck Mass"]         | GVar: diag_truck_mass  --- extra logging on runtime - mass recalculation.
 ["Debug Collisions"]         | GVar: diag_collisions  --- visual debug of static map collisions. Only effective on map load.
-["EnvMapDebug"]              | GVar: diag_envmap      --- effective on terrain load (envmap init). 
+["EnvMapDebug"]              | GVar: diag_envmap      --- effective on terrain load (envmap init).
 ["VideoCameraDebug"]         | GVar: diag_videocameras--- creates debug mesh showing videocamera direction. Effective on vehicle spawn.
 
 ["Enable Ingame Console"]    |       +                --- Equivalent to "\log" console command, echoes all RoR.log output to console. Reported to cause massive slowdown on startup.
@@ -50,7 +50,7 @@
 ["Trigger Debug"]            |       +                --- Use before spawn, lasts entire vehicle lifetime.
 ["DOFDebug"]                 |       +                --- Effective on CameraManager init (map loading)
 
-["Advanced Logging"]         | ~ no gvar ~            --- DEAD, used in removed 'ScopeLog' feature of old spawner. 
+["Advanced Logging"]         | ~ no gvar ~            --- DEAD, used in removed 'ScopeLog' feature of old spawner.
 
 */
 
@@ -280,87 +280,6 @@ void CreateCacheSystem()
 
 } // namespace App
 
-// ================================================================================
-// Logging
-// Visual style:
-//     [RoR|Gvar]  sim_gvar_name  (NEW) ==> (PEND)     [ACTIV]            ~~ new pending value, active stands
-//     [RoR|Gvar]  sim_gvar_name  (NEW) ==> (PEND) ==> [ACTIV]            ~~ direct update of active (+pending) value
-//     [RoR|Gvar]  sim_gvar_name     ()     (PEND) ==> [ACTIV]            ~~ direct update of active (+pending) value
-// ================================================================================
-
-static const char*  GVAR_FMT_S  = "[RoR|GVar]  %s:  (%s) %s (%s) %s [%s]";
-static const char*  GVAR_FMT_D  = "[RoR|GVar]  %s:  (%d) %s (%d) %s [%d]";
-static const char*  GVAR_FMT_F  = "[RoR|GVar]  %s:  (%f) %s (%f) %s [%f]";
-static const size_t GVAR_NBUF   = 500;
-
-#define LOG(_MSG) std::cout << _MSG << std::endl;
-
-// SetPending
-void GVarBase::LogSetPendingS(const char* input, const char* pending, const char* active) const
-{
-    char buf[GVAR_NBUF];
-    snprintf(buf, GVAR_NBUF, GVAR_FMT_S, name, input, "==>", pending, "   ", active);
-    LOG(buf);
-}
-
-void GVarBase::LogSetPending(int input, int pending, int active) const
-{
-    char buf[GVAR_NBUF];
-    snprintf(buf, GVAR_NBUF, GVAR_FMT_D, name, input, "==>", pending, "   ", active);
-    LOG(buf);
-}
-
-void GVarBase::LogSetPending(float input, float pending, float active) const
-{
-    char buf[GVAR_NBUF];
-    snprintf(buf, GVAR_NBUF, GVAR_FMT_F, name, input, "==>", pending, "   ", active);
-    LOG(buf);
-}
-
-// SetActive
-void GVarBase::LogSetActiveS(const char* input, const char* active) const
-{
-    char buf[GVAR_NBUF];
-    snprintf(buf, GVAR_NBUF, GVAR_FMT_S, name, input, "==>", active, "==>", active);
-    LOG(buf);
-}
-
-void GVarBase::LogSetActive(int input, int active) const
-{
-    char buf[GVAR_NBUF];
-    snprintf(buf, GVAR_NBUF, GVAR_FMT_D, name, input, "==>", active, "==>", active);
-    LOG(buf);
-}
-
-void GVarBase::LogSetActive(float input, float active) const
-{
-    char buf[GVAR_NBUF];
-    snprintf(buf, GVAR_NBUF, GVAR_FMT_F, name, input, "==>", active, "==>", active);
-    LOG(buf);
-}
-
-// ApplyPending
-void GVarBase::LogApplyPendingS(const char* pending, const char* active) const
-{
-    char buf[GVAR_NBUF];
-    snprintf(buf, GVAR_NBUF, GVAR_FMT_S, name, "", "   ", pending, "==>", active);
-    LOG(buf);
-}
-
-void GVarBase::LogApplyPending(int pending, int active) const
-{
-    char buf[GVAR_NBUF];
-    snprintf(buf, GVAR_NBUF, GVAR_FMT_D, name, "", "   ", pending, "==>", active);
-    LOG(buf);
-}
-
-void GVarBase::LogApplyPending(float pending, float active) const
-{
-    char buf[GVAR_NBUF];
-    snprintf(buf, GVAR_NBUF, GVAR_FMT_F, name, "", "   ", pending, "==>", active);
-    LOG(buf);
-}
-
 const char* EnumToStr(AppState v)
 {
     switch (v)
@@ -507,6 +426,23 @@ const char* EnumToStr(GfxExtCamMode v)
     case GfxExtCamMode::PITCHING: return "PITCHING";
     default:                      return "~invalid~";
     }
+}
+
+void Log(const char* msg)
+{
+    Ogre::LogManager::getSingleton().logMessage(msg);
+}
+
+void LogFormat(const char* format, ...)
+{
+    char buffer[2000] = {};
+
+    va_list args;
+    va_start(args, format);
+        vsprintf(buffer, format, args);
+    va_end(args);
+
+    RoR::Log(buffer);
 }
 
 } // namespace RoR

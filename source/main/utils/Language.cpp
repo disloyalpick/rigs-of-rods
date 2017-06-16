@@ -83,23 +83,21 @@ void LanguageEngine::setup()
     GStr<300> mo_path;
     mo_path << App::sys_process_dir.GetActive() << PATH_SLASH << "languages" << PATH_SLASH;
     mo_path << App::app_locale.GetActive()[0] << App::app_locale.GetActive()[1]; // Only first 2 chars are important
-    mo_path << "/LC_MESSAGES";
+    mo_path << PATH_SLASH << "LC_MESSAGES";
 
     // Load a .mo-File.
-    LOG("[RoR|App] Loading language file...");
+    RoR::Log("[RoR|App] Loading language file...");
     GStr<300> rormo_path;
     rormo_path << mo_path << PATH_SLASH << "ror.mo";
     if (reader->ReadFile(rormo_path) != moFileLib::moFileReader::EC_SUCCESS)
     {
-        GStr<300> err;
-        err << "[RoR|App] Error loading language file: " << rormo_path;
-        LOG(err.buffer);
+        RoR::LogFormat("[RoR|App] Error loading language file: '%s'", rormo_path.ToCStr());
         return;
     }
     working = true;
 
     // add resource path
-    ResourceGroupManager::getSingleton().addResourceLocation(mo_path.buffer, "FileSystem", "LanguageFolder");
+    ResourceGroupManager::getSingleton().addResourceLocation(mo_path.GetBuffer(), "FileSystem", "LanguageFolder");
 
     ResourceGroupManager::getSingleton().initialiseResourceGroup("LanguageFolder");
 

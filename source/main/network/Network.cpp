@@ -537,9 +537,7 @@ bool Connect()
 
     m_username = App::mp_player_name.GetActive();
 
-    GStr<200> log_msg;
-    log_msg <<"[RoR|Networking] Trying to join server '" << App::mp_server_host.GetActive() << "' on port " << TOSTRING(App::mp_server_port.GetActive()) << "'...";
-    LOG(log_msg.buffer);
+    RoR::LogFormat("[RoR|Networking] Trying to join server '%s' on port '%d' ...", App::mp_server_host.GetActive(), App::mp_server_port.GetActive());
 
     SWBaseSocket::SWBaseError error;
 

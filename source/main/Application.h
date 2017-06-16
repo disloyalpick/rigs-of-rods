@@ -27,29 +27,54 @@
 
 #include "ForwardDeclarations.h"
 
+#include <string.h>
 #include <string>
 
 namespace RoR {
 
-template<size_t L> struct GStr /// Wrapper for classic c-string
+
+void                   Log(const char* msg);                    ///< The ultimate, application-wide logging function. Adds a line (any length) in 'RoR.log' file.
+void                   LogFormat(const char* format, ...);      ///< Improved logging utility. Uses fixed 2Kb buffer.
+inline const char*     BoolToStr(bool b)                        { return (b) ? "true" : "false"; }
+
+
+/// Wrapper for classic c-string. Why 'G'string? Because it was originally written for use with our GVars (global vars).
+template<size_t L> class GStr
 {
-    inline             GStr()                                { std::memset(buffer, 0, L); }
-    inline             GStr(GStr<L> & other)                 { std::memcpy(buffer, other, L); }
+public:
+    // Constructors
+    inline             GStr()                                { memset(m_buffer, 0, L); }
+    inline             GStr(GStr<L> const & src)             { this->Assign(src); }
     inline             GStr(const char* src)                 { this->Assign(src); }
 
-    inline             operator const char*() const          { return buffer; }
-    inline void        operator= (GStr const & other)        { this->Assign(other); }
-    inline GStr&       operator<< (std::string const & s)    { this->operator<<(s.c_str()); return *this; }
-    inline bool        IsEmpty() const                       { return buffer[0] == '\0'; }
-    inline int         Compare(const char* other) const      { return std::strncmp(buffer, other, buf_len); }
-    inline bool        operator==(const char* other) const   { return (this->Compare(other) == 0); }
-    inline GStr&       Clear()                               { buffer[0] = '\0'; return *this; }
-    GStr&              Assign(const char* src);
-    GStr&              operator<< (const char c);
-    GStr&              operator<< (const char* input);
+    // Reading
+    inline const char* ToCStr() const                        { return m_buffer; }
+    inline bool        IsEmpty() const                       { return m_buffer[0] == '\0'; }
+    inline char*       GetBuffer()                           { return m_buffer; }
+    inline size_t      GetCapacity() const                   { return m_capacity; }
+    inline int         Compare(const char* str) const        { return std::strncmp(buffer, str, L); }
+    inline size_t      GetLength() const                     { return std::strlen(m_buffer); }
 
-    char         buffer[L];
-    const size_t buf_len = L;
+    // Writing
+    inline GStr&       Clear()                               { m_buffer[0] = '\0'; return *this; }
+    inline GStr&       Assign(const char* src)               { strncpy(m_buffer, src, L); return *this; }
+    inline GStr&       Append(const char* src)               { strncat(m_buffer, src, (L-(strlen(src)+1))); return *this; }
+    inline GStr&       Append(float f)                       { char buf[50]; std::snprintf(buf, 50, "%f", f); this->Append(buf); return *this; }
+    inline GStr&       Append(int i)                         { char buf[50]; std::snprintf(buf, 50, "%d", i); this->Append(buf); return *this; }
+    inline GStr&       Append(char c)                        { char buf[2] = {}; buf[0] = c; this->Append(buf); return *this; }
+
+    // Operators
+    inline             operator const char*() const          { return this->ToCStr(); }
+    inline GStr&       operator=  (const char* src)          { return this->Assign(src); }
+    inline GStr&       operator<< (const char* src)          { return this->Append(src); }
+    inline GStr&       operator<< (float f)                  { return this->Append(f); }
+    inline GStr&       operator<< (int i)                    { return this->Append(i); }
+    inline GStr&       operator<< (char c)                   { return this->Append(c); }
+    inline bool        operator== (const char* other) const  { return (this->Compare(other) == 0); }
+
+private:
+    char         m_buffer[L];
+    const size_t m_capacity = L;
 };
 
 
@@ -65,23 +90,29 @@ struct GVarBase
         name(name), conf_name(conf_name)
     {}
 
-    // Logging
-    void LogSetPendingS  (const char* input,   const char* pending, const char* active) const;
-    void LogSetPending   (        int input,           int pending,         int active) const;
-    void LogSetPending   (      float input,         float pending,       float active) const;
+    // Logging - visual style:
+    //     [RoR|Gvar]  sim_gvar_name  (NEW) ==> (PEND)     [ACTIV]            ~~ new pending value, active stands
+    //     [RoR|Gvar]  sim_gvar_name  (NEW) ==> (PEND) ==> [ACTIV]            ~~ direct update of active (+pending) value
+    //     [RoR|Gvar]  sim_gvar_name     ()     (PEND) ==> [ACTIV]            ~~ direct update of active (+pending) value
 
-    void LogSetActiveS   (const char* input,   const char* active) const;
-    void LogSetActive    (        int input,           int active) const;
-    void LogSetActive    (      float input,         float active) const;
+    const char* LOG_FMT_S = "[RoR|GVar]  %20s:  (%10s) %s (10%s) %s [10%s]";
+    const char* LOG_FMT_D = "[RoR|GVar]  %20s:  (%10d) %s (10%d) %s [10%d]";
+    const char* LOG_FMT_F = "[RoR|GVar]  %20s:  (%10f) %s (10%f) %s [10%f]";
 
-    void LogApplyPendingS(const char* pending, const char* active) const;
-    void LogApplyPending (        int pending,         int active) const;
-    void LogApplyPending (      float pending,       float active) const;
+    inline void LogSetPending(const char* input, const char* pending, const char* active) const  { RoR::LogFormat(LOG_FMT_S, name, input, "==>", pending, "   ", active); }
+    inline void LogSetPending(int         input, int         pending, int         active) const  { RoR::LogFormat(LOG_FMT_D, name, input, "==>", pending, "   ", active); }
+    inline void LogSetPending(float       input, float       pending, float       active) const  { RoR::LogFormat(LOG_FMT_F, name, input, "==>", pending, "   ", active); }
+    inline void LogSetPending(bool        input, bool        pending, bool        active) const  { this->LogSetPending(BoolToStr(input), BoolToStr(pending), BoolToStr(active)); }
 
-    inline const char* BoolToStr(bool b) const                       { return (b) ? "true" : "false"; }
-    void        LogSetPending  (bool a, bool b, bool c) const { this->LogSetPendingS  (this->BoolToStr(a), this->BoolToStr(b), this->BoolToStr(c)); }
-    void        LogSetActive   (bool a, bool b) const         { this->LogSetActiveS   (this->BoolToStr(a), this->BoolToStr(b)); }
-    void        LogApplyPending(bool a, bool b) const         { this->LogApplyPendingS(this->BoolToStr(a), this->BoolToStr(b)); }
+    inline void LogSetActive(const char* input, const char* active) const                        { RoR::LogFormat(LOG_FMT_S, name, input, "==>", active, "==>", active); }
+    inline void LogSetActive(int         input, int         active) const                        { RoR::LogFormat(LOG_FMT_D, name, input, "==>", active, "==>", active); }
+    inline void LogSetActive(float       input, float       active) const                        { RoR::LogFormat(LOG_FMT_F, name, input, "==>", active, "==>", active); }
+    inline void LogSetActive(bool        input, bool        active) const                        { this->LogSetActive(BoolToStr(input),  BoolToStr(active)); }
+
+    inline void LogApplyPending(const char* pending, const char* active) const                   { RoR::LogFormat(LOG_FMT_S, name, "~~", "   ", pending, "==>", active); }
+    inline void LogApplyPending(int         pending, int         active) const                   { RoR::LogFormat(LOG_FMT_S, name, "~~", "   ", pending, "==>", active); }
+    inline void LogApplyPending(float       pending, float       active) const                   { RoR::LogFormat(LOG_FMT_S, name, "~~", "   ", pending, "==>", active); }
+    inline void LogApplyPending(bool        pending, bool        active) const                   { this->LogApplyPending(BoolToStr(pending),  BoolToStr(active)); }
 
     const char* name;
     const char* conf_name;
@@ -137,9 +168,9 @@ public:
     inline bool            IsActiveEmpty() const    { return m_value_active.IsEmpty(); }
     inline GStr<L> &       GetPending()             { return m_value_pending; }
 
-    void                   SetActive (const char* val)   { GVarBase::LogSetActiveS   (val, m_value_active); m_value_active = val; }
-    void                   SetPending(const char* val)   { GVarBase::LogSetPendingS  (val, m_value_pending, m_value_active); m_value_pending = val; }
-    void                   ApplyPending()                { GVarBase::LogApplyPendingS(m_value_pending, m_value_active); m_value_active = m_value_pending; }
+    void                   SetActive (const char* val);
+    void                   SetPending(const char* val);
+    void                   ApplyPending();
 
 protected:
     GStr<L>         m_value_active;
@@ -391,21 +422,6 @@ void SetSimController        (RoRFrameListener*  obj);
 } // namespace App
 
 // Template implementations
-template <size_t L> GStr<L>& GStr<L>::Assign(const char* src)
-{
-    const size_t src_len = std::strlen(src) + 1;
-    if (src_len > L)
-    {
-        std::memcpy(buffer, src, L);
-        buffer[L-1] = '\0';
-    }
-    else
-    {
-        std::strcpy(buffer, src);
-    }
-    return *this;
-}
-
 template <typename T> void GVarPod<T>::SetPending(T val)
 {
     if (val != m_value_pending)
@@ -445,7 +461,7 @@ template <typename T> void GVarEnum<T>::SetPending(T val)
     if (val != m_value_pending)
     {
         if (App::diag_trace_globals.GetActive())
-            GVarBase::LogSetPendingS(EnumToStr(val), EnumToStr(m_value_pending), EnumToStr(m_value_active));
+            GVarBase::LogSetPending(EnumToStr(val), EnumToStr(m_value_pending), EnumToStr(m_value_active));
 
         m_value_pending = val;
     }
@@ -456,7 +472,7 @@ template <typename T> void GVarEnum<T>::ApplyPending()
     if (m_value_active != m_value_pending)
     {
         if (App::diag_trace_globals.GetActive())
-            GVarBase::LogApplyPendingS(EnumToStr(m_value_pending), EnumToStr(m_value_active));
+            GVarBase::LogApplyPending(EnumToStr(m_value_pending), EnumToStr(m_value_active));
 
         m_value_active = m_value_pending;
     }
@@ -467,28 +483,49 @@ template <typename T> void GVarEnum<T>::SetActive(T val)
     if (val != m_value_active)
     {
         if (App::diag_trace_globals.GetActive())
-            GVarBase::LogSetActiveS(EnumToStr(val), EnumToStr(m_value_active));
+            GVarBase::LogSetActive(EnumToStr(val), EnumToStr(m_value_active));
 
         m_value_active = val;
         m_value_pending = val;
     }
 }
 
-template <size_t L> GStr<L>& GStr<L>::operator<< (const char c)
+template <size_t L> void GVarStr<L>::SetActive(const char* val)
 {
-    size_t pos = strlen(buffer);
-    if (pos < (L-1))
+    if (val != m_value_active)
     {
-        buffer[pos] = c; buffer[pos+1] = '\0';
+        if (App::diag_trace_globals.GetActive())
+            GVarBase::LogSetActive(val, m_value_active);
+
+        m_value_active = val;
+        m_value_pending = val;
     }
-    return *this;
 }
 
-template <size_t L> GStr<L>& GStr<L>::operator<< (const char* input)
+template <size_t L> void GVarStr<L>::SetPending(const char* val)
 {
-    size_t pos = strlen(buffer);
-    strcat_s(buffer + pos, buf_len - pos, input);
-    return *this;
+    if (val != m_value_pending)
+    {
+        if (App::diag_trace_globals.GetActive())
+            GVarBase::LogSetPending(val, m_value_pending, m_value_active);
+
+        m_value_pending = val;
+    }
+}
+
+template <size_t L> void GVarStr<L>::ApplyPending()
+{
+    if (m_value_active != m_value_pending)
+    {
+        if (App::diag_trace_globals.GetActive())
+            GVarBase::LogApplyPending(m_value_pending, m_value_active);
+
+        m_value_active = m_value_pending;
+    }
 }
 
 } // namespace RoR
+
+inline void          LOG(const char* msg)           { RoR::Log(msg); }         ///< Legacy alias
+inline void          LOG(std::string const & msg)   { RoR::Log(msg.c_str()); } ///< Legacy alias
+
