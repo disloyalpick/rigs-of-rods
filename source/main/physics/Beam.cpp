@@ -457,27 +457,6 @@ void Beam::scaleTruck(float value)
     BES_GFX_STOP(BES_GFX_ScaleTruck);
 }
 
-void Beam::initSimpleSkeleton()
-{
-    simpleSkeletonManualObject = gEnv->sceneManager->createManualObject();
-
-    simpleSkeletonManualObject->estimateIndexCount(free_beam * 2);
-    simpleSkeletonManualObject->setCastShadows(false);
-    simpleSkeletonManualObject->setDynamic(true);
-    simpleSkeletonManualObject->setRenderingDistance(300);
-    simpleSkeletonManualObject->begin("vehicle-skeletonview-material", RenderOperation::OT_LINE_LIST);
-    for (int i = 0; i < free_beam; i++)
-    {
-        simpleSkeletonManualObject->position(beams[i].p1->AbsPosition);
-        simpleSkeletonManualObject->colour(1.0f, 1.0f, 1.0f);
-        simpleSkeletonManualObject->position(beams[i].p2->AbsPosition);
-        simpleSkeletonManualObject->colour(0.0f, 0.0f, 0.0f);
-    }
-    simpleSkeletonManualObject->end();
-    simpleSkeletonNode->attachObject(simpleSkeletonManualObject);
-    simpleSkeletonInitiated = true;
-}
-
 void Beam::updateSimpleSkeleton()
 {
     BES_GFX_START(BES_GFX_UpdateSkeleton);
@@ -3679,28 +3658,6 @@ void Beam::updateVisual(float dt)
     hydroruddercommand = autorudder;
     hydroelevatorcommand = autoelevator;
 
-    if (cabFadeMode > 0 && dt > 0)
-    {
-        if (cabFadeTimer > 0)
-            cabFadeTimer -= dt;
-
-        if (cabFadeTimer < 0.1 && cabFadeMode == 1)
-        {
-            cabFadeMode = 0;
-            cabFade(0.4);
-        }
-        else if (cabFadeTimer < 0.1 && cabFadeMode == 2)
-        {
-            cabFadeMode = 0;
-            cabFade(1);
-        }
-
-        if (cabFadeMode == 1)
-            cabFade(0.4 + 0.6 * cabFadeTimer / cabFadeTime);
-        else if (cabFadeMode == 2)
-            cabFade(1 - 0.6 * cabFadeTimer / cabFadeTime);
-    }
-
     for (int i = 0; i < free_beam; i++)
     {
         if (!beams[i].mSceneNode)
@@ -3720,23 +3677,6 @@ void Beam::updateVisual(float dt)
             beams[i].mSceneNode->setScale(beams[i].diameter, (beams[i].p1->AbsPosition - beams[i].p2->AbsPosition).length(), beams[i].diameter);
         }
     }
-
-    if (m_request_skeletonview_change)
-    {
-        if (m_skeletonview_is_active && m_request_skeletonview_change < 0)
-        {
-            hideSkeleton(true);
-        }
-        else if (!m_skeletonview_is_active && m_request_skeletonview_change > 0)
-        {
-            showSkeleton(true, true);
-        }
-
-        m_request_skeletonview_change = 0;
-    }
-
-    if (m_skeletonview_is_active)
-        updateSimpleSkeleton();
 
     BES_GFX_STOP(BES_GFX_updateVisual);
 }
@@ -3794,186 +3734,6 @@ void Beam::setDetailLevel(int v)
     }
 }
 
-void Beam::showSkeleton(bool meshes, bool linked)
-{
-    m_skeletonview_is_active = true;
-
-    if (meshes)
-    {
-        cabFadeMode = 1;
-        cabFadeTimer = cabFadeTime;
-    }
-    else
-    {
-        cabFadeMode = -1;
-        // directly hide meshes, no fading
-        cabFade(0);
-    }
-
-    for (int i = 0; i < free_wheel; i++)
-    {
-        if (vwheels[i].cnode)
-            vwheels[i].cnode->setVisible(false);
-
-        if (vwheels[i].fm)
-            vwheels[i].fm->setVisible(false);
-    }
-
-    for (int i = 0; i < free_prop; i++)
-    {
-        if (props[i].scene_node)
-            setMeshWireframe(props[i].scene_node, true);
-
-        if (props[i].wheel)
-            setMeshWireframe(props[i].wheel, true);
-    }
-
-    if (simpleSkeletonNode)
-    {
-        simpleSkeletonNode->setVisible(true);
-    }
-
-    // hide mesh wheels
-    for (int i = 0; i < free_wheel; i++)
-    {
-        if (vwheels[i].fm && vwheels[i].meshwheel)
-        {
-            Entity* e = ((FlexMeshWheel*)(vwheels[i].fm))->getRimEntity();
-            if (e)
-                e->setVisible(false);
-        }
-    }
-
-    // wireframe drawning for flexbody
-    for (int i = 0; i < free_flexbody; i++)
-    {
-        SceneNode* s = flexbodies[i]->getSceneNode();
-        if (s)
-            setMeshWireframe(s, true);
-    }
-
-    if (linked)
-    {
-        // apply to all locked trucks
-        determineLinkedBeams();
-        for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
-        {
-            (*it)->showSkeleton(meshes, false);
-        }
-    }
-
-    updateSimpleSkeleton();
-
-    TRIGGER_EVENT(SE_TRUCK_SKELETON_TOGGLE, trucknum);
-}
-
-void Beam::hideSkeleton(bool linked)
-{
-    m_skeletonview_is_active = false;
-
-    if (cabFadeMode >= 0)
-    {
-        cabFadeMode = 2;
-        cabFadeTimer = cabFadeTime;
-    }
-    else
-    {
-        cabFadeMode = -1;
-        // directly show meshes, no fading
-        cabFade(1);
-    }
-
-    for (int i = 0; i < free_wheel; i++)
-    {
-        if (vwheels[i].cnode)
-            vwheels[i].cnode->setVisible(true);
-
-        if (vwheels[i].fm)
-            vwheels[i].fm->setVisible(true);
-    }
-    for (int i = 0; i < free_prop; i++)
-    {
-        if (props[i].scene_node)
-            setMeshWireframe(props[i].scene_node, false);
-
-        if (props[i].wheel)
-            setMeshWireframe(props[i].wheel, false);
-    }
-
-    if (simpleSkeletonNode)
-        simpleSkeletonNode->setVisible(false);
-
-    // show mesh wheels
-    for (int i = 0; i < free_wheel; i++)
-    {
-        if (vwheels[i].fm && vwheels[i].meshwheel)
-        {
-            Entity* e = ((FlexMeshWheel *)(vwheels[i].fm))->getRimEntity();
-            if (e)
-                e->setVisible(true);
-        }
-    }
-
-    // normal drawning for flexbody
-    for (int i = 0; i < free_flexbody; i++)
-    {
-        SceneNode* s = flexbodies[i]->getSceneNode();
-        if (!s)
-            continue;
-        setMeshWireframe(s, false);
-    }
-
-    if (linked)
-    {
-        // apply to all locked trucks
-        determineLinkedBeams();
-        for (std::list<Beam*>::iterator it = linkedBeams.begin(); it != linkedBeams.end(); ++it)
-        {
-            (*it)->hideSkeleton(false);
-        }
-    }
-}
-
-void Beam::fadeMesh(SceneNode* node, float amount)
-{
-    for (int a = 0; a < node->numAttachedObjects(); a++)
-    {
-        Entity* e = (Entity *)node->getAttachedObject(a);
-        MaterialPtr m = e->getSubEntity(0)->getMaterial();
-        if (m.getPointer() == 0)
-            continue;
-        for (int x = 0; x < m->getNumTechniques(); x++)
-        {
-            for (int y = 0; y < m->getTechnique(x)->getNumPasses(); y++)
-            {
-                // TODO: fix this
-                //m->getTechnique(x)->getPass(y)->setAlphaRejectValue(0);
-                if (m->getTechnique(x)->getPass(y)->getNumTextureUnitStates() > 0)
-                    m->getTechnique(x)->getPass(y)->getTextureUnitState(0)->setAlphaOperation(LBX_MODULATE, LBS_TEXTURE, LBS_MANUAL, 1.0, amount);
-            }
-        }
-    }
-}
-
-float Beam::getAlphaRejection(SceneNode* node)
-{
-    for (int a = 0; a < node->numAttachedObjects(); a++)
-    {
-        Entity* e = (Entity *)node->getAttachedObject(a);
-        MaterialPtr m = e->getSubEntity(0)->getMaterial();
-        if (m.getPointer() == 0)
-            continue;
-        for (int x = 0; x < m->getNumTechniques(); x++)
-        {
-            for (int y = 0; y < m->getTechnique(x)->getNumPasses(); y++)
-            {
-                return m->getTechnique(x)->getPass(y)->getAlphaRejectValue();
-            }
-        }
-    }
-    return 0;
-}
-
 void Beam::setAlphaRejection(SceneNode* node, float amount)
 {
     for (int a = 0; a < node->numAttachedObjects(); a++)
@@ -4006,7 +3766,7 @@ void Beam::setMeshWireframe(SceneNode* node, bool value)
             for (int x = 0; x < m->getNumTechniques(); x++)
                 for (int y = 0; y < m->getTechnique(x)->getNumPasses(); y++)
                     if (value)
-                        m->getTechnique(x)->getPass(y)->setPolygonMode(PM_WIREFRAME);
+                        m->getTechnique(x)->getPass(y)->setSce->setPolygonMode(PM_WIREFRAME);
                     else
                         m->getTechnique(x)->getPass(y)->setPolygonMode(PM_SOLID);
         }

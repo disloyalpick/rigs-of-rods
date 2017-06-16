@@ -72,6 +72,13 @@ public:
         VCTYPE_MIRROR_PROP_RIGHT, ///< The classic 'special prop/rear view mirror'
     };
 
+    enum class DebugViewType
+    {
+        DEBUGVIEW_NONE,
+        DEBUGVIEW_SKELETON,
+        DEBUGVIEW_NODES,
+    };
+
     /// An Ogre::Camera mounted on the actor and rendering into
     /// either in-scene texture or external window.
     struct VideoCamera
@@ -99,7 +106,8 @@ public:
     GfxActor(Beam* actor, std::string ogre_resource_group):
         m_actor(actor),
         m_custom_resource_group(ogre_resource_group),
-        m_vidcam_state(VideoCamState::VCSTATE_ENABLED_ONLINE)
+        m_vidcam_state(VideoCamState::VCSTATE_ENABLED_ONLINE),
+        m_debug_view(DebugViewType::DEBUGVIEW_NONE)
     {}
 
     ~GfxActor();
@@ -120,6 +128,7 @@ private:
     std::vector<FlareMaterial>  m_flare_materials;
     VideoCamState               m_vidcam_state;
     std::vector<VideoCamera>    m_videocameras;
+    DebugViewType               m_debug_view;
 
     // Cab materials and their features
     Ogre::MaterialPtr           m_cab_mat_visual; ///< Updated in-place from templates
