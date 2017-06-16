@@ -120,6 +120,7 @@ public:
     void                 SetVideoCamState    (VideoCamState state);
     inline VideoCamState GetVideoCamState    () const { return m_vidcam_state; }
     void                 UpdateVideoCameras  (float dt_sec);
+    void                 UpdateDebugView     ();
 
 private:
 

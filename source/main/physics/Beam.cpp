@@ -3734,45 +3734,6 @@ void Beam::setDetailLevel(int v)
     }
 }
 
-void Beam::setAlphaRejection(SceneNode* node, float amount)
-{
-    for (int a = 0; a < node->numAttachedObjects(); a++)
-    {
-        Entity* e = (Entity *)node->getAttachedObject(a);
-        MaterialPtr m = e->getSubEntity(0)->getMaterial();
-        if (m.getPointer() == 0)
-            continue;
-        for (int x = 0; x < m->getNumTechniques(); x++)
-        {
-            for (int y = 0; y < m->getTechnique(x)->getNumPasses(); y++)
-            {
-                m->getTechnique(x)->getPass(y)->setAlphaRejectValue((unsigned char)amount);
-                return;
-            }
-        }
-    }
-}
-
-void Beam::setMeshWireframe(SceneNode* node, bool value)
-{
-    for (int a = 0; a < node->numAttachedObjects(); a++)
-    {
-        Entity* e = (Entity *)node->getAttachedObject(a);
-        for (int se = 0; se < (int)e->getNumSubEntities(); se++)
-        {
-            MaterialPtr m = e->getSubEntity(se)->getMaterial();
-            if (m.getPointer() == 0)
-                continue;
-            for (int x = 0; x < m->getNumTechniques(); x++)
-                for (int y = 0; y < m->getTechnique(x)->getNumPasses(); y++)
-                    if (value)
-                        m->getTechnique(x)->getPass(y)->setSce->setPolygonMode(PM_WIREFRAME);
-                    else
-                        m->getTechnique(x)->getPass(y)->setPolygonMode(PM_SOLID);
-        }
-    }
-}
-
 void Beam::setBeamVisibility(bool visible)
 {
     for (int i = 0; i < free_beam; i++)
