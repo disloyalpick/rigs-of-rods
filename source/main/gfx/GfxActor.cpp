@@ -334,18 +334,18 @@ void RoR::GfxActor::UpdateVideoCameras(float dt_sec)
     }
 }
 
-const ImU32 BEAM_COLOR            (0xcc33aabb); // All colors are in ABGR format (alpha, blue, green, red)
+const ImU32 BEAM_COLOR            (0xff556633);//(0xff55ddee); // All colors are in ABGR format (alpha, blue, green, red)
 const float BEAM_THICKNESS        (1.2f);
-const ImU32 BEAM_BROKEN_COLOR     (0xdd4466dd);
+const ImU32 BEAM_BROKEN_COLOR     (0xff4466dd);
 const float BEAM_BROKEN_THICKNESS (1.8f);
-const ImU32 BEAM_HYDRO_COLOR      (0xcc5593b0);
+const ImU32 BEAM_HYDRO_COLOR      (0xff55a3e0);
 const float BEAM_HYDRO_THICKNESS  (1.4f);
 //const ImU32 BEAM_COMMAND_COLOR    (0xddcc5521); // TODO: not yet used because commands cannot be distinguished on runtime
 //const float BEAM_COMMAND_THICKNESS(1.45f);
 const ImU32 BEAM_COMPRESS_TEXT_COL(0xffbb8844);
 const ImU32 BEAM_HYDRO_TEXT_COLOR (0xffaa8844);
 
-const ImU32 NODE_COLOR            (0xeeaa5523);
+const ImU32 NODE_COLOR            (0xff44ddff);//(0xeeaa5523);
 const float NODE_RADIUS           (2.f);
 const ImU32 NODE_TEXT_COLOR       (0xffcccccf); // node ID text color
 const ImU32 NODE_MASS_TEXT_COLOR  (0xff77bb66);
