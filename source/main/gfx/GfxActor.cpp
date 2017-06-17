@@ -334,30 +334,31 @@ void RoR::GfxActor::UpdateVideoCameras(float dt_sec)
     }
 }
 
-const ImU32 BEAM_COLOR            (0xff556633);//(0xff55ddee); // All colors are in ABGR format (alpha, blue, green, red)
-const float BEAM_THICKNESS        (1.2f);
-const ImU32 BEAM_BROKEN_COLOR     (0xff4466dd);
-const float BEAM_BROKEN_THICKNESS (1.8f);
-const ImU32 BEAM_HYDRO_COLOR      (0xff55a3e0);
-const float BEAM_HYDRO_THICKNESS  (1.4f);
-//const ImU32 BEAM_COMMAND_COLOR    (0xddcc5521); // TODO: not yet used because commands cannot be distinguished on runtime
-//const float BEAM_COMMAND_THICKNESS(1.45f);
-const ImU32 BEAM_COMPRESS_TEXT_COL(0xffbb8844);
-const ImU32 BEAM_HYDRO_TEXT_COLOR (0xffaa8844);
+const ImU32 BEAM_COLOR               (0xff556633); // All colors are in ABGR format (alpha, blue, green, red)
+const float BEAM_THICKNESS           (1.2f);
+const ImU32 BEAM_BROKEN_COLOR        (0xff4466dd);
+const float BEAM_BROKEN_THICKNESS    (1.8f);
+const ImU32 BEAM_HYDRO_COLOR         (0xff55a3e0);
+const float BEAM_HYDRO_THICKNESS     (1.4f);
+const ImU32 BEAM_STRENGTH_TEXT_COLOR (0xffcfd0cc);
+const ImU32 BEAM_STRESS_TEXT_COLOR   (0xff58bbfc);
+const ImU32 BEAM_COMPRESS_TEXT_COLOR (0xffccbf3c);
+const ImU32 BEAM_HYDRO_TEXT_COLOR    (0xffaa8844);
+// TODO: commands cannot be distinguished on runtime
 
-const ImU32 NODE_COLOR            (0xff44ddff);//(0xeeaa5523);
-const float NODE_RADIUS           (2.f);
-const ImU32 NODE_TEXT_COLOR       (0xffcccccf); // node ID text color
-const ImU32 NODE_MASS_TEXT_COLOR  (0xff77bb66);
-const ImU32 NODE_PRELOCK_COLOR    (0xffee9933); // PRELOCK/LOCKED states are indicated by extra circle around node
-const float NODE_PRELOCK_THICKNESS(2.3f);
-const float NODE_PRELOCK_RADIUS   (4.f);
-const ImU32 NODE_LOCKED_COLOR     (0xffbb8844);
-const float NODE_LOCKED_THICKNESS (1.4f);
-const float NODE_LOCKED_RADIUS    (2.6f);
-const ImU32 NODE_PREUNLOCK_COLOR  (0xffbb8899);
-const float NODE_PREUNLOCK_THICK  (1.9f);
-const float NODE_PREUNLOCK_RADIUS (3.8f);
+const ImU32 NODE_COLOR               (0xff44ddff);
+const float NODE_RADIUS              (2.f);
+const ImU32 NODE_TEXT_COLOR          (0xffcccccf); // node ID text color
+const ImU32 NODE_MASS_TEXT_COLOR     (0xff77bb66);
+const ImU32 NODE_PRELOCK_COLOR       (0xffee9933); // PRELOCK/LOCKED states are indicated by extra circle around node
+const float NODE_PRELOCK_THICKNESS   (2.3f);
+const float NODE_PRELOCK_RADIUS      (4.f);
+const ImU32 NODE_LOCKED_COLOR        (0xffbb8844);
+const float NODE_LOCKED_THICKNESS    (1.4f);
+const float NODE_LOCKED_RADIUS       (2.6f);
+const ImU32 NODE_PREUNLOCK_COLOR     (0xffbb8899);
+const float NODE_PREUNLOCK_THICKNESS (1.9f);
+const float NODE_PREUNLOCK_RADIUS    (3.8f);
 
 void RoR::GfxActor::UpdateDebugView()
 {
@@ -412,8 +413,8 @@ void RoR::GfxActor::UpdateDebugView()
         (m_debug_view == DebugViewType::DEBUGVIEW_BEAMS))
     {
         // Beams
-        beam_t* beams = m_actor->beams;
-        size_t num_beams = static_cast<size_t>(m_actor->free_beam);
+        const beam_t* beams = m_actor->beams;
+        const size_t num_beams = static_cast<size_t>(m_actor->free_beam);
         for (size_t i = 0; i < num_beams; ++i)
         {
             ImVec2 pos1 = world2screen.Convert(beams[i].p1->AbsPosition);
@@ -445,8 +446,8 @@ void RoR::GfxActor::UpdateDebugView()
         }
 
         // Nodes
-        node_t* nodes = m_actor->nodes;
-        size_t num_nodes = static_cast<size_t>(m_actor->free_node);
+        const node_t* nodes = m_actor->nodes;
+        const size_t num_nodes = static_cast<size_t>(m_actor->free_node);
         for (size_t i = 0; i < num_nodes; ++i)
         {
             ImVec2 pos = world2screen.Convert(nodes[i].AbsPosition);
@@ -456,7 +457,7 @@ void RoR::GfxActor::UpdateDebugView()
             {
             case PRELOCK:   drawlist->AddCircle(pos, NODE_PRELOCK_RADIUS,   NODE_PRELOCK_COLOR,   12, NODE_PRELOCK_THICKNESS);
             case LOCKED:    drawlist->AddCircle(pos, NODE_LOCKED_RADIUS,    NODE_LOCKED_COLOR,    12, NODE_LOCKED_THICKNESS);
-            case PREUNLOCK: drawlist->AddCircle(pos, NODE_PREUNLOCK_RADIUS, NODE_PREUNLOCK_COLOR, 12, NODE_PREUNLOCK_THICK);
+            case PREUNLOCK: drawlist->AddCircle(pos, NODE_PREUNLOCK_RADIUS, NODE_PREUNLOCK_COLOR, 12, NODE_PREUNLOCK_THICKNESS);
             default:; // Nothing displayed on state `UNLOCKED`
             }
         }
@@ -487,25 +488,42 @@ void RoR::GfxActor::UpdateDebugView()
         {
             for (size_t i = 0; i < num_beams; ++i)
             {
-                ImVec2 pos1 = world2screen.Convert(beams[i].p1->AbsPosition);
-                ImVec2 pos2 = world2screen.Convert(beams[i].p2->AbsPosition);
-                ImVec2 pos(((pos1.x + pos2.x) / 2.f), ((pos1.y + pos2.y) / 2.f));
+                // Position
+                Ogre::Vector3 world_pos = (beams[i].p1->AbsPosition + beams[i].p2->AbsPosition) / 2.f;
+                ImVec2 pos = world2screen.Convert(world_pos);
 
-                GStr<40> stress_buf;
-                stress_buf << beams[i].stress;
-                drawlist->AddText(pos, NODE_TEXT_COLOR, stress_buf.ToCStr());
+                // Strength is usually in thousands or millions - we shorten it.
+                const size_t BUF_LEN = 50;
+                char buf[BUF_LEN];
+                if (beams[i].strength >= 1000000.f)
+                {
+                    snprintf(buf, BUF_LEN, "%.2fM", (beams[i].strength / 1000000.f));
+                }
+                else if (beams[i].strength >= 1000.f)
+                {
+                    snprintf(buf, BUF_LEN, "%.1fK", (beams[i].strength / 1000.f));
+                }
+                else
+                {
+                    snprintf(buf, BUF_LEN, "%.2f", beams[i].strength);
+                }
+                drawlist->AddText(pos, BEAM_STRENGTH_TEXT_COLOR, buf);
+                const ImVec2 stren_text_size = ImGui::CalcTextSize(buf);
 
-                GStr<40> compress_buf;
-                compress_buf << std::abs(beams[i].stress / beams[i].minmaxposnegstress); // NOTE: Different formula; the old one didn't make sense to me ~ only_a_ptr, 06/2017
-                pos.x += ImGui::CalcTextSize(stress_buf.ToCStr()).x;
-                drawlist->AddText(pos, BEAM_COMPRESS_TEXT_COL, compress_buf.ToCStr());
+                // Compression
+                snprintf(buf, BUF_LEN, "|%.2f",  std::abs(beams[i].stress / beams[i].minmaxposnegstress)); // NOTE: New formula (simplified); the old one didn't make sense to me ~ only_a_ptr, 06/2017
+                drawlist->AddText(ImVec2(pos.x + stren_text_size.x, pos.y), BEAM_COMPRESS_TEXT_COLOR, buf);
+
+                // Stress
+                snprintf(buf, BUF_LEN, "%.1f", beams[i].stress);
+                ImVec2 stress_text_pos(pos.x, pos.y + stren_text_size.y);
+                drawlist->AddText(stress_text_pos, BEAM_STRESS_TEXT_COLOR, buf);
 
                 if ((beams[i].type == BEAM_HYDRO || (beams[i].type == BEAM_INVISIBLE_HYDRO)))
                 {
-                    pos.x += ImGui::CalcTextSize(compress_buf.ToCStr()).x;
-                    GStr<40> hydro_buf;
-                    hydro_buf << (beams[i].L / beams[i].Lhydro) * 100;
-                    drawlist->AddText(pos, BEAM_HYDRO_TEXT_COLOR, hydro_buf.ToCStr());
+                    ImVec2 hydro_text_pos((pos.x + ImGui::CalcTextSize(buf).x), stress_text_pos.y);
+                    snprintf(buf, BUF_LEN, "%.1f", ((beams[i].L / beams[i].Lhydro) * 100));
+                    drawlist->AddText(hydro_text_pos, BEAM_HYDRO_TEXT_COLOR, buf);
                 }
             }
         }
