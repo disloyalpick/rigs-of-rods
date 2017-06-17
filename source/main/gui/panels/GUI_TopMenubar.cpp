@@ -309,27 +309,21 @@ void RoR::GUI::TopMenubar::Update()
             //       it remembers the size and the radiobuttons never become visible - they get clipped out.
             ImGui::Separator();
             ImGui::TextColored(GRAY_HINT_TEXT, "Live diagnostic views:");
+            ImGui::TextColored(GRAY_HINT_TEXT, "(Use 'K' hotkey to cycle)"); // !!TODO!! - display actual setting of EV_COMMON_CYCLE_DEBUG_VIEWS
 
-            int debug_view_type = -1;
+            int debug_view_type = static_cast<int>(GfxActor::DebugViewType::DEBUGVIEW_NONE);
             if (current_actor != nullptr)
             {
-                debug_view_type = current_actor->debugVisuals;
+                debug_view_type = static_cast<int>(current_actor->GetGfxActor()->GetDebugView());
             }
-            ImGui::RadioButton("no visual debug"       , &debug_view_type,  0);
-            ImGui::RadioButton("show node numbers"     , &debug_view_type,  1);
-            ImGui::RadioButton("show beam numbers"     , &debug_view_type,  2);
-            ImGui::RadioButton("show node&beam numbers", &debug_view_type,  3);
-            ImGui::RadioButton("show node mass"        , &debug_view_type,  4);
-            ImGui::RadioButton("show node locked"      , &debug_view_type,  5);
-            ImGui::RadioButton("show beam compression" , &debug_view_type,  6);
-            ImGui::RadioButton("show beam broken"      , &debug_view_type,  7);
-            ImGui::RadioButton("show beam stress"      , &debug_view_type,  8);
-            ImGui::RadioButton("show beam strength"    , &debug_view_type,  9);
-            ImGui::RadioButton("show beam hydros"      , &debug_view_type, 10);
-            ImGui::RadioButton("show beam commands"    , &debug_view_type, 11);
-            if ((current_actor != nullptr) && (debug_view_type != current_actor->debugVisuals))
+            ImGui::RadioButton("Normal view",   &debug_view_type,  static_cast<int>(GfxActor::DebugViewType::DEBUGVIEW_NONE));
+            ImGui::RadioButton("Skeleton view", &debug_view_type,  static_cast<int>(GfxActor::DebugViewType::DEBUGVIEW_SKELETON));
+            ImGui::RadioButton("Node details",  &debug_view_type,  static_cast<int>(GfxActor::DebugViewType::DEBUGVIEW_NODES));
+            ImGui::RadioButton("Beam details",  &debug_view_type,  static_cast<int>(GfxActor::DebugViewType::DEBUGVIEW_BEAMS));
+
+            if ((current_actor != nullptr) && (debug_view_type != static_cast<int>(current_actor->GetGfxActor()->GetDebugView())))
             {
-                current_actor->setDebugOverlayState(debug_view_type);
+                current_actor->GetGfxActor()->SetDebugView(static_cast<GfxActor::DebugViewType>(debug_view_type));
             }
 
             m_open_menu_hoverbox_min = menu_pos;
