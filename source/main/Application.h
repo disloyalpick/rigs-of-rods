@@ -33,6 +33,119 @@
 namespace RoR {
 
 
+enum class AppState
+{
+    NONE,               ///< Only valid for GVar 'app_state_pending'. Means no change is requested.
+    BOOTSTRAP,          ///< Initial state
+    MAIN_MENU,
+    CHANGE_MAP,         ///< Enter main menu & immediatelly launch singleplayer map selector.
+    SIMULATION,
+    SHUTDOWN,
+    PRINT_HELP_EXIT,
+    PRINT_VERSION_EXIT,
+};
+const char* EnumToStr(AppState v);
+
+enum class MpState
+{
+    NONE,      ///< Only valid for GVar 'app_state_pending'. Means no change is requested.
+    DISABLED,  ///< Not connected for whatever reason.
+    CONNECTED,
+};
+const char* EnumToStr(MpState v);
+
+enum class SimState
+{
+    NONE,
+    RUNNING,
+    PAUSED,
+    SELECTING,  ///< The selector GUI window is displayed.
+    EDITOR_MODE ///< Hacky, but whatever... added by Ulteq, 2016
+};
+const char* EnumToStr(SimState v);
+
+enum class SimGearboxMode
+{
+    AUTO,          ///< Automatic shift
+    SEMI_AUTO,     ///< Manual shift - Auto clutch
+    MANUAL,        ///< Fully Manual: sequential shift
+    MANUAL_STICK,  ///< Fully manual: stick shift
+    MANUAL_RANGES, ///< Fully Manual: stick shift with ranges
+};
+const char* EnumToStr(SimGearboxMode v);
+
+enum class GfxShadowType
+{
+    NONE,
+    TEXTURE,
+    PSSM
+};
+const char* EnumToStr(GfxShadowType v);
+
+enum class GfxExtCamMode
+{
+    NONE,
+    STATIC,
+    PITCHING,
+};
+const char* EnumToStr(GfxExtCamMode v);
+
+enum class GfxTexFilter
+{
+    NONE,
+    BILINEAR,
+    TRILINEAR,
+    ANISOTROPIC,
+};
+const char* EnumToStr(GfxTexFilter v);
+
+enum class GfxVegetation
+{
+    NONE,
+    x20PERC,
+    x50PERC,
+    FULL,
+};
+const char* EnumToStr(GfxVegetation v);
+
+enum class GfxFlaresMode
+{
+    NONE,                    ///< None (fastest)
+    NO_LIGHTSOURCES,         ///< No light sources
+    CURR_VEHICLE_HEAD_ONLY,  ///< Only current vehicle, main lights
+    ALL_VEHICLES_HEAD_ONLY,  ///< All vehicles, main lights
+    ALL_VEHICLES_ALL_LIGHTS, ///< All vehicles, all lights
+};
+const char* EnumToStr(GfxFlaresMode v);
+
+enum class GfxWaterMode
+{
+    NONE,       ///< None
+    BASIC,      ///< Basic (fastest)
+    REFLECT,    ///< Reflection
+    FULL_FAST,  ///< Reflection + refraction (speed optimized)
+    FULL_HQ,    ///< Reflection + refraction (quality optimized)
+    HYDRAX,     ///< HydraX
+};
+const char* EnumToStr(GfxWaterMode v);
+
+enum class GfxSkyMode
+{
+    SANDSTORM,  ///< Sandstorm (fastest)
+    CAELUM,     ///< Caelum (best looking, slower)
+    SKYX,       ///< SkyX (best looking, slower)
+};
+const char* EnumToStr(GfxSkyMode v);
+
+enum class IoInputGrabMode
+{
+    NONE,
+    ALL,
+    DYNAMIC,
+};
+const char* EnumToStr(IoInputGrabMode v);
+
+
 void                   Log(const char* msg);                    ///< The ultimate, application-wide logging function. Adds a line (any length) in 'RoR.log' file.
 void                   LogFormat(const char* format, ...);      ///< Improved logging utility. Uses fixed 2Kb buffer.
 inline const char*     BoolToStr(bool b)                        { return (b) ? "true" : "false"; }
@@ -176,119 +289,6 @@ protected:
     GStr<L>         m_value_active;
     GStr<L>         m_value_pending;
 };
-
-
-enum class AppState
-{
-    NONE,               ///< Only valid for GVar 'app_state_pending'. Means no change is requested.
-    BOOTSTRAP,          ///< Initial state
-    MAIN_MENU,
-    CHANGE_MAP,         ///< Enter main menu & immediatelly launch singleplayer map selector.
-    SIMULATION,
-    SHUTDOWN,
-    PRINT_HELP_EXIT,
-    PRINT_VERSION_EXIT,
-};
-const char* EnumToStr(AppState v);
-
-enum class MpState
-{
-    NONE,      ///< Only valid for GVar 'app_state_pending'. Means no change is requested.
-    DISABLED,  ///< Not connected for whatever reason.
-    CONNECTED,
-};
-const char* EnumToStr(MpState v);
-
-enum class SimState
-{
-    NONE,
-    RUNNING,
-    PAUSED,
-    SELECTING,  ///< The selector GUI window is displayed.
-    EDITOR_MODE ///< Hacky, but whatever... added by Ulteq, 2016
-};
-const char* EnumToStr(SimState v);
-
-enum class SimGearboxMode
-{
-    AUTO,          ///< Automatic shift
-    SEMI_AUTO,     ///< Manual shift - Auto clutch
-    MANUAL,        ///< Fully Manual: sequential shift
-    MANUAL_STICK,  ///< Fully manual: stick shift
-    MANUAL_RANGES, ///< Fully Manual: stick shift with ranges
-};
-const char* EnumToStr(SimGearboxMode v);
-
-enum class GfxShadowType
-{
-    NONE,
-    TEXTURE,
-    PSSM
-};
-const char* EnumToStr(GfxShadowType v);
-
-enum class GfxExtCamMode
-{
-    NONE,
-    STATIC,
-    PITCHING,
-};
-const char* EnumToStr(GfxExtCamMode v);
-
-enum class GfxTexFilter
-{
-    NONE,
-    BILINEAR,
-    TRILINEAR,
-    ANISOTROPIC,
-};
-const char* EnumToStr(GfxTexFilter v);
-
-enum class GfxVegetation
-{
-    NONE,
-    x20PERC,
-    x50PERC,
-    FULL,
-};
-const char* EnumToStr(GfxVegetation v);
-
-enum class GfxFlaresMode
-{
-    NONE,                    ///< None (fastest)
-    NO_LIGHTSOURCES,         ///< No light sources
-    CURR_VEHICLE_HEAD_ONLY,  ///< Only current vehicle, main lights
-    ALL_VEHICLES_HEAD_ONLY,  ///< All vehicles, main lights
-    ALL_VEHICLES_ALL_LIGHTS, ///< All vehicles, all lights
-};
-const char* EnumToStr(GfxFlaresMode v);
-
-enum class GfxWaterMode
-{
-    NONE,       ///< None
-    BASIC,      ///< Basic (fastest)
-    REFLECT,    ///< Reflection
-    FULL_FAST,  ///< Reflection + refraction (speed optimized)
-    FULL_HQ,    ///< Reflection + refraction (quality optimized)
-    HYDRAX,     ///< HydraX
-};
-const char* EnumToStr(GfxWaterMode v);
-
-enum class GfxSkyMode
-{
-    SANDSTORM,  ///< Sandstorm (fastest)
-    CAELUM,     ///< Caelum (best looking, slower)
-    SKYX,       ///< SkyX (best looking, slower)
-};
-const char* EnumToStr(GfxSkyMode v);
-
-enum class IoInputGrabMode
-{
-    NONE,
-    ALL,
-    DYNAMIC,
-};
-const char* EnumToStr(IoInputGrabMode v);
 
 namespace App {
 
