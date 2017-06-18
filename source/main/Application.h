@@ -52,7 +52,7 @@ public:
     inline bool        IsEmpty() const                       { return m_buffer[0] == '\0'; }
     inline char*       GetBuffer()                           { return m_buffer; }
     inline size_t      GetCapacity() const                   { return m_capacity; }
-    inline int         Compare(const char* str) const        { return std::strncmp(buffer, str, L); }
+    inline int         Compare(const char* str) const        { return std::strncmp(m_buffer, str, L); }
     inline size_t      GetLength() const                     { return std::strlen(m_buffer); }
 
     // Writing
