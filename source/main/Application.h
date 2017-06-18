@@ -146,7 +146,7 @@ template <typename E> class GVarEnum: public GVarPod<E>
 {
 public:
     GVarEnum(const char* name, const char* conf, E active_val, E pending_val):
-        GVarPod(name, conf, active_val, pending_val)
+        GVarPod<E>(name, conf, active_val, pending_val)
     {}
 
     const char*  GetActiveAsStr () const       { return EnumToStr(m_value_active); }
