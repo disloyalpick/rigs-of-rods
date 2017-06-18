@@ -27,7 +27,8 @@
 
 #include "ForwardDeclarations.h"
 
-#include <string.h>
+#include <cstring>
+#include <cstdio>
 #include <string>
 
 namespace RoR {
@@ -170,8 +171,8 @@ public:
 
     // Writing
     inline GStr&       Clear()                               { m_buffer[0] = '\0'; return *this; }
-    inline GStr&       Assign(const char* src)               { strncpy(m_buffer, src, L); return *this; }
-    inline GStr&       Append(const char* src)               { strncat(m_buffer, src, (L-(strlen(src)+1))); return *this; }
+    inline GStr&       Assign(const char* src)               { std::strncpy(m_buffer, src, L); return *this; }
+    inline GStr&       Append(const char* src)               { std::strncat(m_buffer, src, (L-(strlen(src)+1))); return *this; }
     inline GStr&       Append(float f)                       { char buf[50]; std::snprintf(buf, 50, "%f", f); this->Append(buf); return *this; }
     inline GStr&       Append(int i)                         { char buf[50]; std::snprintf(buf, 50, "%d", i); this->Append(buf); return *this; }
     inline GStr&       Append(char c)                        { char buf[2] = {}; buf[0] = c; this->Append(buf); return *this; }
